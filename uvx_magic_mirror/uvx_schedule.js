@@ -1,7 +1,11 @@
 Module.register("uvx_schedule", {
 
     defaults: {
-        text: "Hello World!",
+        text: "Hello World!"
+    },
+
+    getScripts: function() {
+        return ["uvx_schedule.js"];
     },
 
     getDom: function() {
@@ -10,6 +14,6 @@ Module.register("uvx_schedule", {
         wrapper.innerHTML = this.config.text;
         return wrapper;
 
-    },
+    }
 
 } );
