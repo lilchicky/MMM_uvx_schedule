@@ -30,133 +30,133 @@ Module.register("uvx_magic_mirror", {
 
     updateDisplay: function() {
       const stopTimes = [
-        ["0434"],
-        ["0504",
-        "0534"],
-        ["0604",
-        "0634",
-        "0649"],
-        ["0704",
-        "0716",
-        "0722",
-        "0728",
-        "0734",
-        "0740",
-        "0746",
-        "0752",
-        "0758"],
-        ["0804",
-        "0810",
-        "0816",
-        "0822",
-        "0828",
-        "0834",
-        "0840",
-        "0846",
-        "0852",
-        "0858"],
-        ["0904",
-        "0910",
-        "0916",
-        "0922",
-        "0928",
-        "0934",
-        "0940",
-        "0946",
-        "0952",
-        "0958"],
-        ["1004",
-        "1010",
-        "1016",
-        "1022",
-        "1032",
-        "1042",
-        "1052"],
-        ["1102",
-        "1112",
-        "1122",
-        "1132",
-        "1142",
-        "1152"],
-        ["1202",
-        "1212",
-        "1222",
-        "1232",
-        "1242",
-        "1252"],
-        ["1302",
-        "1312",
-        "1322",
-        "1332",
-        "1342",
-        "1352"],
-        ["1402",
-        "1412",
-        "1422",
-        "1432",
-        "1442",
-        "1449",
-        "1455",
-        "1401"],
-        ["1507",
-        "1513",
-        "1519",
-        "1525",
-        "1531",
-        "1537",
-        "1543",
-        "1549",
-        "1555"],
-        ["1601",
-        "1607",
-        "1613",
-        "1619",
-        "1625",
-        "1631",
-        "1637",
-        "1643",
-        "1649",
-        "1655"],
-        ["1701",
-        "1707",
-        "1713",
-        "1719",
-        "1725",
-        "1731",
-        "1737",
-        "1743",
-        "1752"],
-        ["1802",
-        "1812",
-        "1822",
-        "1832",
-        "1842",
-        "1852"],
-        ["1902",
-        "1912",
-        "1922",
-        "1932",
-        "1942",
-        "1952"],
-        ["2002",
-        "2012",
-        "2022",
-        "2032",
-        "2042",
-        "2054"],
-        ["2109",
-        "2124",
-        "2139",
-        "2154"],
-        ["2209",
-        "2224",
-        "2239",
-        "2259"],
-        ["2319",
-        "2349",
-        "2319",
-        "2349"]
-      ];
+        "04:34",
+        "05:04",
+        "05:34",
+        "06:04",
+        "06:34",
+        "06:49",
+        "07:04",
+        "07:16",
+        "07:22",
+        "07:28",
+        "07:34",
+        "07:40",
+        "07:46",
+        "07:52",
+        "07:58",
+        "08:04",
+        "08:10",
+        "08:16",
+        "08:22",
+        "08:28",
+        "08:34",
+        "08:40",
+        "08:46",
+        "08:52",
+        "08:58",
+        "09:04",
+        "09:10",
+        "09:16",
+        "09:22",
+        "09:28",
+        "09:34",
+        "09:40",
+        "09:46",
+        "09:52",
+        "09:58",
+        "10:04",
+        "10:10",
+        "10:16",
+        "10:22",
+        "10:32",
+        "10:42",
+        "10:52",
+        "11:02",
+        "11:12",
+        "11:22",
+        "11:32",
+        "11:42",
+        "11:52",
+        "12:02",
+        "12:12",
+        "12:22",
+        "12:32",
+        "12:42",
+        "12:52",
+        "13:02",
+        "13:12",
+        "13:22",
+        "13:32",
+        "13:42",
+        "13:52",
+        "14:02",
+        "14:12",
+        "14:22",
+        "14:32",
+        "14:42",
+        "14:49",
+        "14:55",
+        "14:01",
+        "15:07",
+        "15:13",
+        "15:19",
+        "15:25",
+        "15:31",
+        "15:37",
+        "15:43",
+        "15:49",
+        "15:55",
+        "16:01",
+        "16:07",
+        "16:13",
+        "16:19",
+        "16:25",
+        "16:31",
+        "16:37",
+        "16:43",
+        "16:49",
+        "16:55",
+        "17:01",
+        "17:07",
+        "17:13",
+        "17:19",
+        "17:25",
+        "17:31",
+        "17:37",
+        "17:43",
+        "17:52",
+        "18:02",
+        "18:12",
+        "18:22",
+        "18:32",
+        "18:42",
+        "18:52",
+        "19:02",
+        "19:12",
+        "19:22",
+        "19:32",
+        "19:42",
+        "19:52",
+        "20:02",
+        "20:12",
+        "20:22",
+        "20:32",
+        "20:42",
+        "20:54",
+        "21:09",
+        "21:24",
+        "21:39",
+        "21:54",
+        "22:09",
+        "22:24",
+        "22:39",
+        "22:59",
+        "23:19",
+        "23:49",
+        "23:19",
+        "23:49"
+    ];
 
       return "\nRandom Time: " + this.displaySchedule(timeValue);
     },
@@ -166,49 +166,15 @@ Module.register("uvx_magic_mirror", {
       const hour = moment().hour();
       const minutes = moment().minute();
 
-      //Find the hour matching current hour
-      for (let x = 0; x < timeIn.length; x++) {
-        let hourOne = timeIn[x][0].charAt(0);
-        let hourTwo = timeIn[x][0].charAt(1);
-        numericalHour = parseInt(("" + hourOne + hourTwo));
-        //If current hour is the same as the hour in the array
-        if (numericalHour === hour) {
-          //find the schedule minutes that are GREATER than the current minutes
-          for (let y = 0; y < timeIn[x].length; y++) {
-            let minuteOne = timeIn[x][y].charAt(2);
-            let minuteTwo = timeIn[x][y].charAt(3);
-            numericalMinute = parseInt(("" + minuteOne + minuteTwo));
-            //If schedule minute is GREATER than current minute AND we are NOT at the end of the hour times
-            if (minutes < numericalMinute && y < timeIn[x].length) {
-              nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
-              nextScheduleHours = "" + hourOne + "" + hourTwo;
-              break;
-            }
-            //If we are at the END of the hour times AND we are NOT at the end of the GREATER ARRAY
-            else if (y === timeIn[x].length - 1 && x < timeIn.length) {
-              let minuteOne = timeIn[x+1][0].charAt(2);
-              let minuteTwo = timeIn[x+1][0].charAt(3);
-              nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
-              let hourOne = timeIn[x+1][0].charAt(0);
-              let hourTwo = timeIn[x+1][0].charAt(1);
-              nextScheduleHours = "" + hourOne + "" + hourTwo;
-              break;
-            }
-            //If we are at the END of the hour times AND we are at the END of the GREATER ARRAY
-            else if (y === timeIn[x].length - 1 && x === timeIn.length - 1) {
-              let minuteOne = timeIn[0][0].charAt(2);
-              let minuteTwo = timeIn[0][0].charAt(3);
-              nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
-              let hourOne = timeIn[0][0].charAt(0);
-              let hourTwo = timeIn[0][0].charAt(1);
-              nextScheduleHours = "" + hourOne + "" + hourTwo;
-              break;
-            }
-          }
-        }
-      }
+      timeIn.foreach(findNextSchedule);
 
-      return "" + nextScheduleHours + ":" + nextScheduleMinutes;
+      //Find the hour matching current hour
+
+      return testText;
+    },
+
+    findNextSchedule: function(time, index) {
+      testText += index + ": " + time + "\n";
     },
 
     getDom: function() {
