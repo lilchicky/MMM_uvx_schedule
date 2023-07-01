@@ -169,15 +169,33 @@ Module.register("uvx_magic_mirror", {
 
       let timeValue = stopTimes[timeIndex];
 
-      this.config.text = "Current Hour: " + hour + "\nRandom Stop: " + timeValue;
+      return "Current Hour: " + hour + "\nRandom Hour: " + this.splitTimeValues(timeValue);
+    },
+
+    splitTimeValues: function(timeIn) {
+      let hourIn = timeIn.split(0, 2);
+      return hourIn;
     },
 
     getDom: function() {
         const wrapper = document.createElement("div");
 
-        this.updateDisplay();
+        const display = document.createElement("span");
 
-        wrapper.innerHTML = this.config.text;
+        const parts = this.updateDisplay.split("\n");
+
+        for (const part of parts) {
+          if (part != "") {
+            display.appendChild(document.createTextNode(part));
+            display.appendChild(document.createElement("BR"));
+          }
+        }
+
+        if (display.children.length > 0) {
+          display.lastElementChild.remove();
+          wrapper.appendChild(display);
+        }
+        
         return wrapper;
     }
 
