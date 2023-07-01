@@ -1,7 +1,12 @@
 Module.register("uvx_magic_mirror", {
     
     defaults: {
-      text: "Hello World!",
+      nextStop: "Hello World!"
+    },
+
+    start: function() {
+        Log.log('Starting Module: ' + this.name);
+        this.nextStop = "Loading...";
     },
   
     getTimesFromFile: function() {
@@ -14,7 +19,7 @@ Module.register("uvx_magic_mirror", {
 
     getDom: function () {
       var wrapper = document.createElement("div");
-      this.text=getTimesFromFile();
+      this.nextStop=getTimesFromFile();
       wrapper.innerHTML = this.config.text;
       return wrapper;
     }
