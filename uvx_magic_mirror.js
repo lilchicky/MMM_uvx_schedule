@@ -3,7 +3,7 @@ Module.register("uvx_magic_mirror", {
     defaults: {
 
       "updateInterval" : 5000,
-      "fadeSpeed": 1000,
+      "fadeSpeed": 0,
       "text": "Start Text"
     },
 
@@ -159,26 +159,127 @@ Module.register("uvx_magic_mirror", {
         "23:19",
         "23:49"
     ];
+    const satTimes = [
+      "6:32",
+      "7:02",
+      "7:21",
+      "7:36",
+      "7:51",
+      "8:06",
+      "8:21",
+      "8:36",
+      "8:51",
+      "9:06",
+      "9:21",
+      "9:36",
+      "9:51",
+      "10:06",
+      "10:23",
+      "10:38",
+      "10:53",
+      "11:08",
+      "11:23",
+      "11:38",
+      "11:53",
+      "12:08",
+      "12:23",
+      "12:38",
+      "12:53",
+      "13:08",
+      "13:23",
+      "13:38",
+      "13:53",
+      "14:08",
+      "14:23",
+      "14:38",
+      "14:53",
+      "15:08",
+      "15:23",
+      "15:38",
+      "15:53",
+      "16:08",
+      "16:23",
+      "16:38",
+      "16:53",
+      "17:08",
+      "17:23",
+      "17:38",
+      "17:53",
+      "18:06",
+      "18:21",
+      "18:36",
+      "18:51",
+      "19:06",
+      "19:21",
+      "19:36",
+      "19:51",
+      "20:06",
+      "20:21",
+      "20:36",
+      "20:51",
+      "21:06",
+      "21:21",
+      "21:36",
+      "21:51",
+      "22:06",
+      "22:21",
+      "22:36",
+      "22:51",
+      "23:06",
+      "23:36",
+      "00:08",
+      "00:38"
+    ];
 
       const hour = moment().hour();
       const minutes = moment().minute();
       const day = moment().day();
 
-      for(let x = 0; x < weekTimes.length; x++) {
-        let times = weekTimes[x].split(":");
-        if (times[0] === hour) {
-          if (times[1] > minutes) {
-            return "Next Stop:\n" + weekTimes[x];
+      if (day === 0) {
+        return "No Bus Service\non Sunday!";
+      }
+      else if (day === 6) {
+        for(let x = 0; x < satTimes.length; x++) {
+          let times = satTimes[x].split(":");
+          if (times[0] === hour) {
+            if (times[1] > minutes) {
+              return "Next Stop:\n" + satTimes[x];
+            }
+            else if (x < satTimes.length - 1 && satTimes[x + 1].split(":")[0] !== hour) {
+              return "Next Stop:\n" + satTimes[x + 1];
+            }
+            else if (x >= satTimes.length - 1) {
+              return "Next Stop:\n" + satTimes[0];
+            }
           }
-          else if (x < weekTimes.length - 1 && weekTimes[x + 1].split(":")[0] !== hour) {
-            return "Next Stop:\n" + weekTimes[x + 1];
-          }
-          else if (x >= weekTimes.length - 1) {
-            return "Next Stop:\n" + weekTimes[0];
+          else if (x >= satTimes.length - 1) {
+            return "No Service Until Monday!";
           }
         }
-        else if (x >= weekTimes.length - 1) {
-          return "Next Stop:\n" + weekTimes[0] + day;
+      }
+      else if (day !== 0 && day !== 6) {
+        for(let x = 0; x < weekTimes.length; x++) {
+          let times = weekTimes[x].split(":");
+          if (times[0] === hour) {
+            if (times[1] > minutes) {
+              return "Next Stop:\n" + weekTimes[x];
+            }
+            else if (x < weekTimes.length - 1 && weekTimes[x + 1].split(":")[0] !== hour) {
+              return "Next Stop:\n" + weekTimes[x + 1];
+            }
+            else if (x >= weekTimes.length - 1) {
+              return "Next Stop:\n" + weekTimes[0];
+            }
+          }
+          else if (x >= weekTimes.length - 1) {
+            if (day === 5) {
+              return "Next Stop:\n" + satTimes[0] + day;
+            }
+            else {
+              return "Next Stop:\n" + weekTimes[0] + day;
+            }
+            
+          }
         }
       }
 
