@@ -143,11 +143,50 @@ Module.register("uvx_magic_mirror", {
       Log.info(`Starting module: ${this.name}`);
   
       this.config.text = "Loading...";
+
+      this.lastComplimentIndex = -1;
   
       // Schedule update timer.
       setInterval(() => {
         this.updateDom(this.config.fadeSpeed);
       }, this.config.updateInterval);
+    },
+
+    randomIndex: function(givenTimes) {
+      if (givenTimes.length === 1) {
+        return 0;
+      }
+      const generate = function() {
+        return Math.floor(Math.random() * givenTimes.length);
+      };
+
+      let timesIndex = generate();
+
+      while (timesIndex === this.lastComplimentIndex) {
+        timesIndex = generate();
+      }
+
+      this.lastComplimentIndex = timesIndex;
+
+      return timesIndex;
+    },
+
+    timeArray: function() {
+      let times = [];
+      const hour = moment().hour();
+      if (hour != 0) {
+        times = [...this.config.stopTimes];
+      }
+
+      return times;
+    },
+
+    getRandomTime: function() {
+      const times = this.timeArray();
+      let index;
+      index = this.randomIndex(times);
+
+      return times[index] || "";
     },
 
     getDom: function() {
