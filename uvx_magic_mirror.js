@@ -30,14 +30,14 @@ Module.register("uvx_magic_mirror", {
       }, this.config.updateInterval);
     },
 
-    compareMinutes: function (currentMinutes, currentHour, currentDay, scheduleMinutes, usedArray) {
+    compareMinutes: function (currentMinutes, currentHour, currentDay, scheduleMinutes, usedArray, index) {
       if (parseInt(scheduleMinutes) > currentMinutes) {
-        return "Next UVX Bus:\n" + usedArray[x] + "\nHolidays may change service!";
+        return "Next UVX Bus:\n" + usedArray[index] + "\nHolidays may change service!";
       }
-      else if (x < usedArray.length - 1 && parseInt((usedArray[x + 1].split(":")[0])) !== currentHour) {
-        return "Next UVX Bus:\n" + usedArray[x + 1] + "\nHolidays may change service!";
+      else if (index < usedArray.length - 1 && parseInt((usedArray[index + 1].split(":")[0])) !== currentHour) {
+        return "Next UVX Bus:\n" + usedArray[index + 1] + "\nHolidays may change service!";
       }
-      else if (x >= usedArray.length - 1) {
+      else if (index >= usedArray.length - 1) {
         let isSaturday = (currentDay === 6) ?
           "No Service Until Monday!" :
           "Next UVX Bus:\n" + usedArray[0] + "\nHolidays may change service!";
@@ -257,7 +257,7 @@ Module.register("uvx_magic_mirror", {
         for(let x = 0; x < satTimes.length; x++) {
           let times = satTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
-            let timeText = compareMinutes(minutes, hour, day, times[1], satTimes);
+            let timeText = compareMinutes(minutes, hour, day, times[1], satTimes, x);
             return timeText;
           }
           else if (x >= satTimes.length - 1) {
@@ -274,7 +274,7 @@ Module.register("uvx_magic_mirror", {
         for(let x = 0; x < weekTimes.length; x++) {
           let times = weekTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
-            let timeText = compareMinutes(minutes, hour, day, times[1], weekTimes);
+            let timeText = compareMinutes(minutes, hour, day, times[1], weekTimes, x);
             return timeText;
           }
           else if (x >= weekTimes.length - 1) {
