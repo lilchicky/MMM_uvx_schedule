@@ -142,7 +142,7 @@ Module.register("uvx_magic_mirror", {
     start: async function () {
       Log.info(`Starting module: ${this.name}`);
   
-      this.text = "Loading...";
+      this.config.text = "Loading...";
   
       // Schedule update timer.
       setInterval(() => {
