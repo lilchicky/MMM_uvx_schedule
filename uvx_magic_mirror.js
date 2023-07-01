@@ -243,10 +243,10 @@ Module.register("uvx_magic_mirror", {
           let times = satTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
             if (parseInt(times[1]) > minutes) {
-              return "Next UVX Bus:\n" + satTimes[x] + "\n<i>Holidays may change service!</i>";
+              return "Next UVX Bus:\n" + satTimes[x] + "\nHolidays may change service!";
             }
             else if (x < satTimes.length - 1 && parseInt((satTimes[x + 1].split(":")[0])) !== hour) {
-              return "Next UVX Bus:\n" + satTimes[x + 1] + "\n<i>Holidays may change service!</i>";
+              return "Next UVX Bus:\n" + satTimes[x + 1] + "\nHolidays may change service!";
             }
             else if (x >= satTimes.length - 1) {
               return "No Service Until Monday!";
@@ -254,7 +254,7 @@ Module.register("uvx_magic_mirror", {
           }
           else if (x >= satTimes.length - 1) {
             if (hour <= 6) {
-              return "Next UVX Bus:\n" + satTimes[0] + "\n<i>Holidays may change service!</i>";
+              return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
             }
             else {
               return "No Service Until Monday!";
@@ -267,26 +267,26 @@ Module.register("uvx_magic_mirror", {
           let times = weekTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
             if (parseInt(times[1]) > minutes) {
-              return "Next UVX Bus:\n" + weekTimes[x] + "\n<i>Holidays may change service!</i>";
+              return "Next UVX Bus:\n" + weekTimes[x] + "\nHolidays may change service!";
             }
             else if (x < weekTimes.length - 1 && parseInt((weekTimes[x + 1].split(":")[0])) !== hour) {
-              return "Next UVX Bus:\n" + weekTimes[x + 1] + "\n<i>Holidays may change service!</i>";
+              return "Next UVX Bus:\n" + weekTimes[x + 1] + "\nHolidays may change service!";
             }
             else if (x >= weekTimes.length - 1) {
-              return "Next UVX Bus:\n" + weekTimes[0] + "\n<i>Holidays may change service!</i>";
+              return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
             }
           }
           else if (x >= weekTimes.length - 1) {
             if (day === 5) {
               if (hour <= 4) {
-                return "Next UVX Bus:\n" + weekTimes[0] + "\n<i>Holidays may change service!</i>";
+                return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
               }
               else {
-                return "Next UVX Bus:\n" + satTimes[0] + "\n<i>Holidays may change service!</i>";
+                return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
               }
             }
             else {
-              return "Next UVX Bus:\n" + weekTimes[0] + "\n<i>Holidays may change service!</i>";
+              return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
             }
             
           }
