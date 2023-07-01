@@ -175,7 +175,7 @@ Module.register("uvx_magic_mirror", {
       let times = [];
       const hour = moment().hour();
       if (hour != 0) {
-        times = [...this.config.stopTimes];
+        times = this.config.stopTimes;
       }
 
       return times;
