@@ -21,6 +21,8 @@ Module.register("uvx_magic_mirror", {
       this.numericalMinute = 0;
       this.nextScheduleMinutes = 0;
       this.nextScheduleHours = 0;
+
+      this.testText = "";
   
       // Schedule update timer.
       setInterval(() => {
@@ -158,23 +160,17 @@ Module.register("uvx_magic_mirror", {
         "23:49"
     ];
 
-      return "\nRandom Time: " + this.displaySchedule(timeValue);
-    },
-
-    displaySchedule: function(timeIn) {
-      //get current time values
       const hour = moment().hour();
       const minutes = moment().minute();
 
-      timeIn.foreach(findNextSchedule);
+      for(let x = 0; x < stopTimes.length; x++) {
+        let times = stopTimes[x].split(":");
+        if (times[0] === hour) {
+          return "Next Stop:\n" + stopTimes[x];
+        }
+      }
 
-      //Find the hour matching current hour
-
-      return testText;
-    },
-
-    findNextSchedule: function(time, index) {
-      testText += index + ": " + time + "\n";
+      return "Next Stop:\nError";
     },
 
     getDom: function() {
