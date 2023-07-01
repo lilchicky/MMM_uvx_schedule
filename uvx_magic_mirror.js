@@ -25,6 +25,7 @@ Module.register("uvx_magic_mirror", {
     },
 
     updateDisplay: function() {
+      const hour = moment().hour();
       const stopTimes = [
         "0434",
         "0504",
@@ -168,7 +169,7 @@ Module.register("uvx_magic_mirror", {
 
       let timeValue = stopTimes[timeIndex];
 
-      this.config.text = timeValue.toString();
+      this.config.text = "Current Hour: " + hour + "\nRandom Stop: " + timeValue;
     },
 
     getDom: function() {
