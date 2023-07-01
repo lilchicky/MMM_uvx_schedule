@@ -30,17 +30,17 @@ Module.register("uvx_magic_mirror", {
       }, this.config.updateInterval);
     },
 
-    checkNextDay: function(endOfDay, usedTimes) {
+    checkNextDay: function(endOfDay, usedTimes, satSchedule, weekSchedule) {
       if (endOfDay) {
 
         // If it is the end of the day on Friday, get Saturday morning times
         // Saturday Night automatically sends Sunday message already
         if (day === 5) {
-          return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
+          return "Next UVX Bus:\n" + satSchedule[0] + "\nHolidays may change service!";
         }
 
         // Otherwise get the first schedule time of a weekday
-        return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
+        return "Next UVX Bus:\n" + weekSchedule[0] + "\nHolidays may change service!";
       }
 
       // If it is NOT the end of the day, get the next schedule time of whatever
@@ -266,7 +266,7 @@ Module.register("uvx_magic_mirror", {
       else if (day === 6) {
 
         //If it is saturday morning, get the next schedule for Saturday times, otherwise return Sunday message
-        let nextStop = (hours <= 6) ? this.nextScheduleDate(satTimes, this.checkNextDay(false, satTimes)) : 
+        let nextStop = (hours <= 6) ? this.nextScheduleDate(satTimes, this.checkNextDay(false, satTimes, satTimes, weekTimes)) : 
           "No Service Until Monday!";
         return nextStop;
       }
@@ -276,8 +276,8 @@ Module.register("uvx_magic_mirror", {
 
         //If weekday morning, get next schedule from Weekday array with end of day set to false, 
         //otherwise get the next schedule from Weekday array with end of day set to true
-        let nextStop = (hours <= 4) ? this.nextScheduleDate(weekTimes, this.checkNextDay(false, weekTimes)) :
-          this.nextScheduleDate(weekTimes, this.checkNextDay(true, weekTimes));
+        let nextStop = (hours <= 4) ? this.nextScheduleDate(weekTimes, this.checkNextDay(false, weekTimes, satTimes, weekTimes)) :
+          this.nextScheduleDate(weekTimes, this.checkNextDay(true, weekTimes, satTimes, weekTimes));
         return nextStop;
       }
 
