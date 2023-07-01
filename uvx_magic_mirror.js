@@ -156,8 +156,8 @@ Module.register("uvx_magic_mirror", {
         "22:59",
         "23:19",
         "23:49",
-        "23:19",
-        "23:49"
+        "00:19",
+        "00:49"
     ];
     const satTimes = [
       "6:32",
@@ -243,18 +243,18 @@ Module.register("uvx_magic_mirror", {
           let times = satTimes[x].split(":");
           if (times[0] === hour) {
             if (times[1] > minutes) {
-              return "Next Stop:\n" + satTimes[x];
+              return "Next Stop:\n" + satTimes[x] + "\nHolidays may change service!";
             }
             else if (x < satTimes.length - 1 && satTimes[x + 1].split(":")[0] !== hour) {
-              return "Next Stop:\n" + satTimes[x + 1];
+              return "Next Stop:\n" + satTimes[x + 1] + "\nHolidays may change service!";
             }
             else if (x >= satTimes.length - 1) {
-              return "Next Stop:\n" + satTimes[0];
+              return "Next Stop:\n" + satTimes[0] + "\nHolidays may change service!";
             }
           }
           else if (x >= satTimes.length - 1) {
             if (hour <= 6) {
-              return "Next Stop:\n" + satTimes[0];
+              return "Next Stop:\n" + satTimes[0] + "\nHolidays may change service!";
             }
             else {
               return "No Service Until Monday!";
@@ -267,26 +267,26 @@ Module.register("uvx_magic_mirror", {
           let times = weekTimes[x].split(":");
           if (times[0] === hour) {
             if (times[1] > minutes) {
-              return "Next Stop:\n" + weekTimes[x];
+              return "Next Stop:\n" + weekTimes[x] + "\nHolidays may change service!";
             }
             else if (x < weekTimes.length - 1 && weekTimes[x + 1].split(":")[0] !== hour) {
-              return "Next Stop:\n" + weekTimes[x + 1];
+              return "Next Stop:\n" + weekTimes[x + 1] + "\nHolidays may change service!";
             }
             else if (x >= weekTimes.length - 1) {
-              return "Next Stop:\n" + weekTimes[0];
+              return "Next Stop:\n" + weekTimes[0] + "\nHolidays may change service!";
             }
           }
           else if (x >= weekTimes.length - 1) {
             if (day === 5) {
               if (hour <= 4) {
-                return "Next Stop:\n" + weekTimes[0];
+                return "Next Stop:\n" + weekTimes[0] + "\nHolidays may change service!";
               }
               else {
-                return "Next Stop:\n" + satTimes[0];
+                return "Next Stop:\n" + satTimes[0] + "\nHolidays may change service!";
               }
             }
             else {
-              return "Next Stop:\n" + weekTimes[0];
+              return "Next Stop:\n" + weekTimes[0] + "\nHolidays may change service!";
             }
             
           }
