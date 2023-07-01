@@ -298,7 +298,7 @@ Module.register("uvx_magic_mirror", {
 
     getDom: function() {
         const wrapper = document.createElement("div");
-        wrapper.className = "thin large bright pre-line";
+        wrapper.className = "thin small bright pre-line";
 
         const display = document.createElement("span");
 
