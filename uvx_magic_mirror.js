@@ -242,7 +242,15 @@ Module.register("uvx_magic_mirror", {
         for(let x = 0; x < satTimes.length; x++) {
           let times = satTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
-            this.compareMinutes(times[1], satTimes);
+            if (parseInt(times[1]) > minutes) {
+              return "Next UVX Bus:\n" + satTimes[x] + "\nHolidays may change service!";
+            }
+            else if (x < satTimes.length - 1 && parseInt((satTimes[x + 1].split(":")[0])) !== hour) {
+              return "Next UVX Bus:\n" + satTimes[x + 1] + "\nHolidays may change service!";
+            }
+            else if (x >= satTimes.length - 1) {
+              return "No Service Until Monday!";
+            }
           }
           else if (x >= satTimes.length - 1) {
             if (hour <= 6) {
@@ -258,7 +266,15 @@ Module.register("uvx_magic_mirror", {
         for(let x = 0; x < weekTimes.length; x++) {
           let times = weekTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
-            this.compareMinutes(times[1], weekTimes);
+            if (parseInt(times[1]) > minutes) {
+              return "Next UVX Bus:\n" + weekTimes[x] + "\nHolidays may change service!";
+            }
+            else if (x < weekTimes.length - 1 && parseInt((weekTimes[x + 1].split(":")[0])) !== hour) {
+              return "Next UVX Bus:\n" + weekTimes[x + 1] + "\nHolidays may change service!";
+            }
+            else if (x >= weekTimes.length - 1) {
+              return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
+            }
           }
           else if (x >= weekTimes.length - 1) {
             if (day === 5) {
@@ -278,21 +294,6 @@ Module.register("uvx_magic_mirror", {
       }
 
       return "Next UVX Bus:\nError";
-    },
-
-    compareMinutes: function (scheduleMinutes, usedArray) {
-      if (parseInt(scheduleMinutes) > minutes) {
-        return "Next UVX Bus:\n" + usedArray[x] + "\nHolidays may change service!";
-      }
-      else if (x < usedArray.length - 1 && parseInt((usedArray[x + 1].split(":")[0])) !== hour) {
-        return "Next UVX Bus:\n" + weekTimes[x + 1] + "\nHolidays may change service!";
-      }
-      else if (x >= usedArray.length - 1) {
-        let isSaturday = (day === 6) ?
-          "No Service Until Monday!" :
-          "Next UVX Bus:\n" + usedArray[0] + "\nHolidays may change service!";
-        return isSaturday;
-      }
     },
 
     getDom: function() {
