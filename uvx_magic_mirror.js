@@ -253,7 +253,12 @@ Module.register("uvx_magic_mirror", {
             }
           }
           else if (x >= satTimes.length - 1) {
-            return "No Service Until Monday!";
+            if (hour <= 6) {
+              return "Next Stop:\n" + satTimes[0];
+            }
+            else {
+              return "No Service Until Monday!";
+            }
           }
         }
       }
@@ -273,7 +278,12 @@ Module.register("uvx_magic_mirror", {
           }
           else if (x >= weekTimes.length - 1) {
             if (day === 5) {
-              return "Next Stop:\n" + satTimes[0];
+              if (hour <= 4) {
+                return "Next Stop:\n" + weekTimes[0];
+              }
+              else {
+                return "Next Stop:\n" + satTimes[0];
+              }
             }
             else {
               return "Next Stop:\n" + weekTimes[0];
