@@ -32,41 +32,41 @@ Module.register("uvx_magic_mirror", {
 
     updateDisplay: function() {
       const stopTimes = [
-        "04:34",
-        "05:04",
-        "05:34",
-        "06:04",
-        "06:34",
-        "06:49",
-        "07:04",
-        "07:16",
-        "07:22",
-        "07:28",
-        "07:34",
-        "07:40",
-        "07:46",
-        "07:52",
-        "07:58",
-        "08:04",
-        "08:10",
-        "08:16",
-        "08:22",
-        "08:28",
-        "08:34",
-        "08:40",
-        "08:46",
-        "08:52",
-        "08:58",
-        "09:04",
-        "09:10",
-        "09:16",
-        "09:22",
-        "09:28",
-        "09:34",
-        "09:40",
-        "09:46",
-        "09:52",
-        "09:58",
+        "4:34",
+        "5:04",
+        "5:34",
+        "6:04",
+        "6:34",
+        "6:49",
+        "7:04",
+        "7:16",
+        "7:22",
+        "7:28",
+        "7:34",
+        "7:40",
+        "7:46",
+        "7:52",
+        "7:58",
+        "8:04",
+        "8:10",
+        "8:16",
+        "8:22",
+        "8:28",
+        "8:34",
+        "8:40",
+        "8:46",
+        "8:52",
+        "8:58",
+        "9:04",
+        "9:10",
+        "9:16",
+        "9:22",
+        "9:28",
+        "9:34",
+        "9:40",
+        "9:46",
+        "9:52",
+        "9:58",
         "10:04",
         "10:10",
         "10:16",
@@ -166,7 +166,15 @@ Module.register("uvx_magic_mirror", {
       for(let x = 0; x < stopTimes.length; x++) {
         let times = stopTimes[x].split(":");
         if (times[0] === hour) {
-          return "Next Stop:\n" + stopTimes[x];
+          if (times[1] > minutes) {
+            return "Next Stop:\n" + stopTimes[x];
+          }
+          else if (x < stopTimes.length - 1 && stopTimes[x + 1].split(":")[0] !== hour) {
+            return "Next Stop:\n" + stopTimes[x + 1];
+          }
+          else if (x >= stopTimes.length - 1) {
+            return "Next Stop:\n" + stopTimes[0];
+          }
         }
         else if (x >= stopTimes.length - 1) {
           return "Next Stop:\n" + stopTimes[0];
