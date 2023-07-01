@@ -173,8 +173,9 @@ Module.register("uvx_magic_mirror", {
     },
 
     splitTimeValues: function(timeIn) {
-      let hourIn = timeIn.split(0, 2);
-      return hourIn;
+      let hourOne = timeIn.charAt(0);
+      let hourTwo = timeIn.charAt(1);
+      return hourOne + hourTwo;
     },
 
     getDom: function() {
