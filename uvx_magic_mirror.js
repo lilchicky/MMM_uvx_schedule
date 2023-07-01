@@ -167,7 +167,7 @@ Module.register("uvx_magic_mirror", {
       let thisHour = parseInt(stopTime.splice(0,2));
       let thisMinute = partInt(stoptime.splice(2,3));
 
-      text += index + ": " + item + "<br>";
+      text += index + ": " + item + "\n";
 
     },
 
