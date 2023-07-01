@@ -18,7 +18,7 @@ Module.register("uvx_magic_mirror", {
             fileReader.onload=function(){
                 document.getElementById('output').textContent=fileReader.result;
             }
-            fileReader.readAsText(this.files[0]);
+            return fileReader.readAsText(this.files[0]);
         })
     }
 
