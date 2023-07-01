@@ -160,7 +160,7 @@ Module.register("uvx_magic_mirror", {
     getDom: function() {
         const wrapper = document.createElement("div");
 
-        updateDisplay();
+        this.updateDisplay();
 
         wrapper.innerHTML = this.config.text;
         return wrapper;
