@@ -17,6 +17,8 @@ Module.register("uvx_magic_mirror", {
       this.config.text = "Loading...";
 
       this.lastIndex = -1;
+      this.numericalHour = 0;
+      this.numericalMinute = 0;
   
       // Schedule update timer.
       setInterval(() => {
@@ -174,15 +176,38 @@ Module.register("uvx_magic_mirror", {
     },
 
     splitTimeValues: function(timeIn) {
+      //create hours from schedule
       let hourOne = timeIn.charAt(0);
       let hourTwo = timeIn.charAt(1);
-      let hoursIn = parseInt(hourOne + hourTwo);
+      numericalHour = parseInt(("" + hourOne + hourTwo));
 
+      //create minutes from schedule
       let minuteOne = timeIn.charAt(2);
       let minuteTwo = timeIn.charAt(3);
-      let minutesIn = parseInt(("" + minuteOne + minuteTwo));
+      numericalMinute = parseInt(("" + minuteOne + minuteTwo));
 
-      return hoursIn + ":" + minutesIn;
+      let displayMinutes;
+      let displayHours;
+      //Add zeroes to display of minutes where needed
+      if (minuteOne === '0' && minuteTwo === '0') {
+        displayMinutes = "00"
+      }
+      else if (minuteOne === '0') {
+        displayMinutes = "0" + minuteTwo;
+      }
+      else if (minuteTwo === '0') {
+        displayMinutes = minuteOne + "0";
+      }
+
+      //Add zeroes to display of hours where needed
+      if (hourOne === '0' && hourTwo === '0') {
+        displayHours = "00"
+      }
+      else if (hourTwo === '0') {
+        displayHours = hourOne + "0";
+      }
+
+      return displayHours + ":" + displayMinutes;
     },
 
     getDom: function() {
