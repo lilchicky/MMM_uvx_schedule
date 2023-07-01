@@ -210,20 +210,15 @@ Module.register("uvx_magic_mirror", {
   
       // Add time of day compliments
       if (hour >= this.config.morningStartTime && hour < this.config.morningEndTime && this.config.compliments.hasOwnProperty("morning")) {
-        compliments = [...this.config.compliments.morning];
+        compliments = [...this.config.stopTimes];
       } else if (hour >= this.config.afternoonStartTime && hour < this.config.afternoonEndTime && this.config.compliments.hasOwnProperty("afternoon")) {
-        compliments = [...this.config.compliments.afternoon];
+        compliments = [...this.config.stopTimes];
       } else if (this.config.compliments.hasOwnProperty("evening")) {
-        compliments = [...this.config.compliments.evening];
-      }
-  
-      // Add compliments based on weather
-      if (this.currentWeatherType in this.config.compliments) {
-        Array.prototype.push.apply(compliments, this.config.compliments[this.currentWeatherType]);
+        compliments = [...this.config.stopTimes];
       }
   
       // Add compliments for anytime
-      Array.prototype.push.apply(compliments, this.config.compliments.anytime);
+      Array.prototype.push.apply(stopTimes, this.config.stopTimes);
   
       // Add compliments for special days
       for (let entry in this.config.compliments) {
