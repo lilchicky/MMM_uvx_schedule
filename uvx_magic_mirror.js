@@ -15,6 +15,8 @@ Module.register("uvx_magic_mirror", {
       Log.info(`Starting module: ${this.name}`);
   
       this.config.text = "Loading...";
+
+      this.lastIndex = -1;
   
       // Schedule update timer.
       setInterval(() => {
@@ -152,7 +154,19 @@ Module.register("uvx_magic_mirror", {
         "2349"
       ];
 
-      let timeValue = stopTimes[Math.floor(Math.random() * stopTimes.length)];
+      const generate = function() {
+        return Math.floor(Math.random() * stopTimes.length);
+      }
+
+      let timeIndex = generate();
+
+      while (timeIndex === this.lastIndex) {
+        timeIndex = generate();
+      }
+
+      this.lastIndex = timeIndex;
+
+      let timeValue = stopTimes[timeIndex];
 
       this.config.text = timeValue.toString();
     },
