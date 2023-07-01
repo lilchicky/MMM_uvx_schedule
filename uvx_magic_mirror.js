@@ -245,7 +245,7 @@ Module.register("uvx_magic_mirror", {
       else if (day === 6) {
 
         //If it is saturday morning, get the next schedule for Saturday times, otherwise return Sunday message
-        let nextStop = hours <= 6 ? this.nextScheduleDate(hour, minutes, day, satTimes, this.checkNextDay(false, day, satTimes)) : 
+        let nextStop = (hours <= 6) ? this.nextScheduleDate(satTimes, this.checkNextDay(false, satTimes)) : 
           "No Service Until Monday!";
         return nextStop;
       }
@@ -255,15 +255,15 @@ Module.register("uvx_magic_mirror", {
 
         //If weekday morning, get next schedule from Weekday array with end of day set to false, 
         //otherwise get the next schedule from Weekday array with end of day set to true
-        let nextStop = hours <= 4 ? this.nextScheduleDate(hour, minutes, day, weekTimes, this.checkNextDay(false, day, weekTimes)) :
-          this.nextScheduleDate(hour, minutes, day, weekTimes, this.checkNextDay(true, day, weekTimes));
+        let nextStop = (hours <= 4) ? this.nextScheduleDate(weekTimes, this.checkNextDay(false, weekTimes)) :
+          this.nextScheduleDate(weekTimes, this.checkNextDay(true, weekTimes));
         return nextStop;
       }
 
       return "Next UVX Bus:\nError";
     },
 
-    nextScheduleDate: function(currentHour, currentMinutes, currentDay, scheduleArray, endOfDay) {
+    nextScheduleDate: function(scheduleArray, endOfDayText) {
 
       //For every time in the given schedule
       for(let x = 0; x < scheduleArray.length; x++) {
@@ -272,39 +272,39 @@ Module.register("uvx_magic_mirror", {
         let times = scheduleArray[x].split(":");
 
         //If the current hour matches the schedule hour
-        if (parseInt(times[0]) === currentHour) {
+        if (parseInt(times[0]) === hour) {
 
           // Check if the give schedule time is GREATER THAN the current minutes (next stop)
-          if (parseInt(times[1]) > currentMinutes) {
+          if (parseInt(times[1]) > minutes) {
             return "Next UVX Bus:\n" + scheduleArray[x] + "\nHolidays may change service!";
           }
 
           // If we reach the end of the list of matching hours, but are NOT at the end of the whole array,
           // return the next time (22:10 -> 23:05, for example)
-          else if (x < scheduleArray.length - 1 && parseInt((scheduleArray[x + 1].split(":")[0])) !== currentHour) {
+          else if (x < scheduleArray.length - 1 && parseInt((scheduleArray[x + 1].split(":")[0])) !== hour) {
             return "Next UVX Bus:\n" + scheduleArray[x + 1] + "\nHolidays may change service!";
           }
 
           // If the hour matches an hour in the array, but the minutes are after all given minutes,
           // (i.e. current time -> 00:50, last schedule time is 00:38) 
           else if (x >= scheduleArray.length - 1) {
-            return endOfDay;
+            return endOfDayText;
           }
         }
 
         // If the current hours do not match any hours in the given array
         else if (x >= scheduleArray.length - 1) {
-          return endOfDay;
+          return endOfDayText;
         }
       }
     },
 
-    checkNextDay: function(endOfDay, currentDay, usedTimes) {
+    checkNextDay: function(endOfDay, usedTimes) {
       if (endOfDay) {
 
         // If it is the end of the day on Friday, get Saturday morning times
         // Saturday Night automatically sends Sunday message already
-        if (currentDay === 5) {
+        if (day === 5) {
           return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
         }
 
