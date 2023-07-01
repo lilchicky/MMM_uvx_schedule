@@ -2,8 +2,8 @@ Module.register("uvx_magic_mirror", {
     
     defaults: {
 
-      "updateInterval" : 1 * 60 * 1000,
-      "fadeSpeed": 4000,
+      "updateInterval" : 5 * 60 * 1000,
+      "fadeSpeed": 1000,
       "text": "Start Text"
     },
 
@@ -152,7 +152,9 @@ Module.register("uvx_magic_mirror", {
         "2349"
       ];
 
-      this.config.text = this.stopTimes[Math.floor(Math.random() * this.stopTimes.length)];
+      var timeValue = stopTimes[5];
+
+      this.config.text = timeValue;
     },
 
     getDom: function() {
