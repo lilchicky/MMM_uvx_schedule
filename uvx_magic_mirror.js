@@ -190,8 +190,22 @@ Module.register("uvx_magic_mirror", {
     },
 
     getDom: function() {
-        var wrapper = document.createElement("div");
-        wrapper.innerHTML = this.config.text;
+        const wrapper = document.createElement("div");
+        const timesText = this.getRandomTime();
+        const parts = timesText.split("\n");
+        const time = document.createElement("span");
+        
+        for(const part of parts) {
+          if (part != "") {
+            time.appendChild(document.createTextNode(part));
+            time.addendChild(docuemnt.createElement("BR"));
+          }
+        }
+
+        if (time.children.length > 0) {
+          time.lastElementChild.remove();
+          wrapper.appendChild(compliment);
+        }
         return wrapper;
     }
 
