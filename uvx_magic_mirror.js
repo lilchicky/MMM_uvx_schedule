@@ -19,6 +19,8 @@ Module.register("uvx_magic_mirror", {
       this.lastIndex = -1;
       this.numericalHour = 0;
       this.numericalMinute = 0;
+      this.nextScheduleMinutes = 0;
+      this.nextScheduleHours = 0;
   
       // Schedule update timer.
       setInterval(() => {
@@ -28,7 +30,7 @@ Module.register("uvx_magic_mirror", {
 
     updateDisplay: function() {
       const stopTimes = [
-        "0434",
+        ["0434"],
         ["0504",
         "0534"],
         ["0604",
@@ -164,42 +166,49 @@ Module.register("uvx_magic_mirror", {
       const hour = moment().hour();
       const minutes = moment().minute();
 
+      //Find the hour matching current hour
       for (let x = 0; x < timeIn.length; x++) {
         let hourOne = timeIn[x][0].charAt(0);
         let hourTwo = timeIn[x][0].charAt(1);
         numericalHour = parseInt(("" + hourOne + hourTwo));
+        //If current hour is the same as the hour in the array
         if (numericalHour === hour) {
+          //find the schedule minutes that are GREATER than the current minutes
           for (let y = 0; y < timeIn[x].length; y++) {
             let minuteOne = timeIn[x][y].charAt(2);
             let minuteTwo = timeIn[x][y].charAt(3);
             numericalMinute = parseInt(("" + minuteOne + minuteTwo));
+            //If schedule minute is GREATER than current minute AND we are NOT at the end of the hour times
             if (minutes < numericalMinute && y < timeIn[x].length) {
-              var nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
-              var nextScheduleHours = "" + hourOne + "" + hourTwo;
+              nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
+              nextScheduleHours = "" + hourOne + "" + hourTwo;
               break;
             }
-            else if (y >= timeIn[x].length && x < timeIn.length) {
+            //If we are at the END of the hour times AND we are NOT at the end of the GREATER ARRAY
+            else if (y === timeIn[x].length - 1 && x < timeIn.length) {
               let minuteOne = timeIn[x+1][0].charAt(2);
               let minuteTwo = timeIn[x+1][0].charAt(3);
-              var nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
+              nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
               let hourOne = timeIn[x+1][0].charAt(0);
               let hourTwo = timeIn[x+1][0].charAt(1);
-              var nextScheduleHours = "" + hourOne + "" + hourTwo;
+              nextScheduleHours = "" + hourOne + "" + hourTwo;
               break;
             }
-            else if (y >= timeIn[x].length && x >= timeIn.length) {
+            //If we are at the END of the hour times AND we are at the END of the GREATER ARRAY
+            else if (y === timeIn[x].length - 1 && x === timeIn.length - 1) {
               let minuteOne = timeIn[0][0].charAt(2);
               let minuteTwo = timeIn[0][0].charAt(3);
-              var nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
+              nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
               let hourOne = timeIn[0][0].charAt(0);
               let hourTwo = timeIn[0][0].charAt(1);
-              var nextScheduleHours = "" + hourOne + "" + hourTwo;
+              nextScheduleHours = "" + hourOne + "" + hourTwo;
+              break;
             }
           }
         }
       }
 
-      return nextScheduleHours + ":" + nextScheduleMinutes;
+      return "" + nextScheduleHours + ":" + nextScheduleMinutes;
     },
 
     getDom: function() {
