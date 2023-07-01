@@ -182,7 +182,7 @@ Module.register("uvx_magic_mirror", {
 
         const display = document.createElement("span");
 
-        const parts = this.updateDisplay.split("\n");
+        const parts = this.updateDisplay().split("\n");
 
         for (const part of parts) {
           if (part != "") {
@@ -195,7 +195,7 @@ Module.register("uvx_magic_mirror", {
           display.lastElementChild.remove();
           wrapper.appendChild(display);
         }
-        
+
         return wrapper;
     }
 
