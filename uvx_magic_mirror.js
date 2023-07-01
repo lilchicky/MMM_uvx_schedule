@@ -13,12 +13,10 @@ Module.register("uvx_magic_mirror", {
     },
 
     getTimesFromFile: function() {
-        document.getElementById('2230_north_stops.txt').addEventListener('stops', function() {
-            var fileReader = new FileReader();
-            fileReader.onload=function(){
-                document.getElementById('output').textContent=fileReader.result;
-            }
-            return fileReader.readAsText(this.files[0]);
+        const fs = require('fs');
+        fs.readFile('2230_north_stops.txt', (err, input) => {
+            if (err) throw err;
+            return input.toString();
         })
     }
 
