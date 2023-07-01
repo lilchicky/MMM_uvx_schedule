@@ -26,6 +26,7 @@ Module.register("uvx_magic_mirror", {
 
     updateDisplay: function() {
       const hour = moment().hour();
+      const minutes = Date.getMinutes();
       const stopTimes = [
         "0434",
         "0504",
@@ -169,13 +170,19 @@ Module.register("uvx_magic_mirror", {
 
       let timeValue = stopTimes[timeIndex];
 
-      return "Current Hour: " + hour + "\nRandom Hour: " + this.splitTimeValues(timeValue);
+      return "Current Time: " + hour + ":" + minutes + "\nRandom Time: " + this.splitTimeValues(timeValue);
     },
 
     splitTimeValues: function(timeIn) {
       let hourOne = timeIn.charAt(0);
       let hourTwo = timeIn.charAt(1);
-      return hourOne + hourTwo;
+      let hoursIn = parseInt(hourOne + hourTwo);
+
+      let minuteOne = timeIn.charAt(2);
+      let minuteTwo = timeIn.charAt(3);
+      let minutesIn = parseInt(minuteOne + minuteTwo);
+
+      return hoursIn + ":" + minutesIn;
     },
 
     getDom: function() {
