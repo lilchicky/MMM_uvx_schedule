@@ -180,7 +180,7 @@ Module.register("uvx_magic_mirror", {
 
       let minuteOne = timeIn.charAt(2);
       let minuteTwo = timeIn.charAt(3);
-      let minutesIn = parseInt(minuteOne + minuteTwo);
+      let minutesIn = parseInt(("" + minuteOne + minuteTwo));
 
       return hoursIn + ":" + minutesIn;
     },
