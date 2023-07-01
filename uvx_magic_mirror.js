@@ -174,58 +174,32 @@ Module.register("uvx_magic_mirror", {
             let minuteTwo = timeIn[x][y].charAt(3);
             numericalMinute = parseInt(("" + minuteOne + minuteTwo));
             if (minutes < numericalMinute && y < timeIn[x].length) {
-              var nextScheduleMinutes = timeIn[x][y];
+              var nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
+              var nextScheduleHours = "" + hourOne + "" + hourTwo;
               break;
             }
             else if (y >= timeIn[x].length && x < timeIn.length) {
-              var nextScheduleMinutes = timeIn[x+1][0];
+              let minuteOne = timeIn[x+1][0].charAt(2);
+              let minuteTwo = timeIn[x+1][0].charAt(3);
+              var nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
+              let hourOne = timeIn[x+1][0].charAt(0);
+              let hourTwo = timeIn[x+1][0].charAt(1);
+              var nextScheduleHours = "" + hourOne + "" + hourTwo;
               break;
             }
             else if (y >= timeIn[x].length && x >= timeIn.length) {
-              var nextScheduleMinutes = timeIn[0][0];
+              let minuteOne = timeIn[0][0].charAt(2);
+              let minuteTwo = timeIn[0][0].charAt(3);
+              var nextScheduleMinutes = "" + minuteOne + "" + minuteTwo;
+              let hourOne = timeIn[0][0].charAt(0);
+              let hourTwo = timeIn[0][0].charAt(1);
+              var nextScheduleHours = "" + hourOne + "" + hourTwo;
             }
           }
         }
       }
 
-      //create hours from schedule
-      let hourOne = timeIn.charAt(0);
-      let hourTwo = timeIn.charAt(1);
-      numericalHour = parseInt(("" + hourOne + hourTwo));
-
-      //create minutes from schedule
-      let minuteOne = timeIn.charAt(2);
-      let minuteTwo = timeIn.charAt(3);
-      numericalMinute = parseInt(("" + minuteOne + minuteTwo));
-
-      let displayMinutes;
-      let displayHours;
-      //Add zeroes to display of minutes where needed
-      if (minuteOne === '0' && minuteTwo === '0') {
-        displayMinutes = "00"
-      }
-      else if (minuteOne === '0') {
-        displayMinutes = "0" + minuteTwo;
-      }
-      else if (minuteTwo === '0') {
-        displayMinutes = minuteOne + "0";
-      }
-
-      //Add zeroes to display of hours where needed
-      if (hourOne === '0' && hourTwo === '0') {
-        displayHours = "00"
-      }
-      else if (hourTwo === '0') {
-        displayHours = hourOne + "0";
-      }
-
-      return displayHours + ":" + displayMinutes;
-    },
-
-
-
-    getNextStop: function(scheduleIn) {
-
+      return nextScheduleHours + ":" + nextScheduleMinutes;
     },
 
     getDom: function() {
