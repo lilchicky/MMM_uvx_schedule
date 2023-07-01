@@ -257,7 +257,8 @@ Module.register("uvx_magic_mirror", {
         for(let x = 0; x < satTimes.length; x++) {
           let times = satTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
-            return this.compareMinutes(minutes, hour, day, times[1], satTimes);
+            let timeText = this.compareMinutes(minutes, hour, day, times[1], satTimes);
+            return timeText;
           }
           else if (x >= satTimes.length - 1) {
             if (hour <= 6) {
@@ -273,7 +274,8 @@ Module.register("uvx_magic_mirror", {
         for(let x = 0; x < weekTimes.length; x++) {
           let times = weekTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
-            return this.compareMinutes(minutes, hour, day, times[1], weekTimes);
+            let timeText = this.compareMinutes(minutes, hour, day, times[1], weekTimes);
+            return timeText;
           }
           else if (x >= weekTimes.length - 1) {
             if (day === 5) {
