@@ -176,7 +176,7 @@ Module.register("uvx_magic_mirror", {
 
       const stopTime = this.getTime();
 
-      const parts = stopTime.split("\n");
+      const parts = text.split("\n");
 
 		  const times = document.createElement("span");
 
