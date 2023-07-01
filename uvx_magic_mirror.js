@@ -31,7 +31,7 @@ Module.register("uvx_magic_mirror", {
     },
 
     updateDisplay: function() {
-      const stopTimes = [
+      const weekTimes = [
         "4:34",
         "5:04",
         "5:34",
@@ -162,22 +162,23 @@ Module.register("uvx_magic_mirror", {
 
       const hour = moment().hour();
       const minutes = moment().minute();
+      const day = moment().day();
 
-      for(let x = 0; x < stopTimes.length; x++) {
-        let times = stopTimes[x].split(":");
+      for(let x = 0; x < weekTimes.length; x++) {
+        let times = weekTimes[x].split(":");
         if (times[0] === hour) {
           if (times[1] > minutes) {
-            return "Next Stop:\n" + stopTimes[x];
+            return "Next Stop:\n" + weekTimes[x];
           }
-          else if (x < stopTimes.length - 1 && stopTimes[x + 1].split(":")[0] !== hour) {
-            return "Next Stop:\n" + stopTimes[x + 1];
+          else if (x < weekTimes.length - 1 && weekTimes[x + 1].split(":")[0] !== hour) {
+            return "Next Stop:\n" + weekTimes[x + 1];
           }
-          else if (x >= stopTimes.length - 1) {
-            return "Next Stop:\n" + stopTimes[0];
+          else if (x >= weekTimes.length - 1) {
+            return "Next Stop:\n" + weekTimes[0];
           }
         }
-        else if (x >= stopTimes.length - 1) {
-          return "Next Stop:\n" + stopTimes[0];
+        else if (x >= weekTimes.length - 1) {
+          return "Next Stop:\n" + weekTimes[0] + day;
         }
       }
 
