@@ -249,7 +249,7 @@ Module.register("uvx_magic_mirror", {
               return "Next Stop:\n" + satTimes[x + 1] + "\nHolidays may change service!";
             }
             else if (x >= satTimes.length - 1) {
-              return "Next Stop:\n" + satTimes[0] + "\nHolidays may change service!";
+              return "No Service Until Monday!";
             }
           }
           else if (x >= satTimes.length - 1) {
@@ -298,7 +298,7 @@ Module.register("uvx_magic_mirror", {
 
     getDom: function() {
         const wrapper = document.createElement("div");
-        wrapper.className = "thin small bright pre-line";
+        wrapper.className = "thick small bright pre-line";
 
         const display = document.createElement("span");
 
