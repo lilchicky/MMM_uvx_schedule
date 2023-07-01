@@ -154,16 +154,15 @@ Module.register("uvx_magic_mirror", {
 
       var timeValue = stopTimes[5];
 
-      return timeValue;
+      this.config.text = timeValue;
     },
 
     getDom: function() {
         const wrapper = document.createElement("div");
 
-        let currentText;
-        currentText = updateDisplay();
+        updateDisplay();
 
-        wrapper.innerHTML = this.currentText;
+        wrapper.innerHTML = this.config.timeValue;
         return wrapper;
     }
 
