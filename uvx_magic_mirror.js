@@ -152,7 +152,7 @@ Module.register("uvx_magic_mirror", {
         "2349"
       ];
 
-      let timeValue = stopTimes[5];
+      let timeValue = stopTimes[Math.floor(Math.random() * stopTimes.length)];
 
       this.config.text = timeValue.toString();
     },
