@@ -241,11 +241,11 @@ Module.register("uvx_magic_mirror", {
       else if (day === 6) {
         for(let x = 0; x < satTimes.length; x++) {
           let times = satTimes[x].split(":");
-          if (times[0] === hour) {
-            if (times[1] > minutes) {
+          if (parseInt(times[0]) === hour) {
+            if (parseInt(times[1]) > minutes) {
               return "Next Stop:\n" + satTimes[x] + "\nHolidays may change service!";
             }
-            else if (x < satTimes.length - 1 && satTimes[x + 1].split(":")[0] !== hour) {
+            else if (x < satTimes.length - 1 && parseInt((satTimes[x + 1].split(":")[0])) !== hour) {
               return "Next Stop:\n" + satTimes[x + 1] + "\nHolidays may change service!";
             }
             else if (x >= satTimes.length - 1) {
@@ -265,11 +265,11 @@ Module.register("uvx_magic_mirror", {
       else if (day !== 0 && day !== 6) {
         for(let x = 0; x < weekTimes.length; x++) {
           let times = weekTimes[x].split(":");
-          if (times[0] === hour) {
-            if (times[1] > minutes) {
+          if (parseInt(times[0]) === hour) {
+            if (parseInt(times[1]) > minutes) {
               return "Next Stop:\n" + weekTimes[x] + "\nHolidays may change service!";
             }
-            else if (x < weekTimes.length - 1 && weekTimes[x + 1].split(":")[0] !== hour) {
+            else if (x < weekTimes.length - 1 && parseInt((weekTimes[x + 1].split(":")[0])) !== hour) {
               return "Next Stop:\n" + weekTimes[x + 1] + "\nHolidays may change service!";
             }
             else if (x >= weekTimes.length - 1) {
