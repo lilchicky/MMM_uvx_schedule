@@ -154,7 +154,7 @@ Module.register("uvx_magic_mirror", {
 
       var timeValue = stopTimes[5];
 
-      this.config.text = timeValue;
+      return timeValue;
     },
 
     getDom: function() {
