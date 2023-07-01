@@ -30,6 +30,27 @@ Module.register("uvx_magic_mirror", {
       }, this.config.updateInterval);
     },
 
+    checkNextDay: function(endOfDay, usedTimes) {
+      if (endOfDay) {
+
+        // If it is the end of the day on Friday, get Saturday morning times
+        // Saturday Night automatically sends Sunday message already
+        if (day === 5) {
+          return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
+        }
+
+        // Otherwise get the first schedule time of a weekday
+        return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
+      }
+
+      // If it is NOT the end of the day, get the next schedule time of whatever
+      // day it currently is (using the given array)
+      else {
+        return "Next UVX Bus:\n" + usedTimes[0] + "\nHolidays may change service!";
+      }
+      
+    },
+
     updateDisplay: function() {
       const weekTimes = [
         "4:34",
@@ -297,27 +318,6 @@ Module.register("uvx_magic_mirror", {
           return endOfDayText;
         }
       }
-    },
-
-    checkNextDay: function(endOfDay, usedTimes) {
-      if (endOfDay) {
-
-        // If it is the end of the day on Friday, get Saturday morning times
-        // Saturday Night automatically sends Sunday message already
-        if (day === 5) {
-          return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
-        }
-
-        // Otherwise get the first schedule time of a weekday
-        return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
-      }
-
-      // If it is NOT the end of the day, get the next schedule time of whatever
-      // day it currently is (using the given array)
-      else {
-        return "Next UVX Bus:\n" + usedTimes[0] + "\nHolidays may change service!";
-      }
-      
     },
 
     getDom: function() {
