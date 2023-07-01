@@ -10,16 +10,13 @@ Module.register("uvx_magic_mirror", {
     },
   
     getTimesFromFile: function() {
-        const fs = require('fs');
-        fs.readFile('2230_north_stops.txt', (err, input) => {
-            if (err) throw err;
-            return input.toString();
-        })
+        const times = require('./2230_north_stops.json');
+        console.log(data);
     },
 
     getDom: function () {
       var wrapper = document.createElement("div");
-      this.nextStop=getTimesFromFile();
+      getTimesFromFile();
       wrapper.innerHTML = this.config.text;
       return wrapper;
     }
