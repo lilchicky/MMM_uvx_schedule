@@ -23,7 +23,7 @@ Module.register("uvx_magic_mirror", {
     },
 
     updateDisplay: function() {
-      let stopTimes = [
+      const stopTimes = [
         "0434",
         "0504",
         "0534",
@@ -152,9 +152,9 @@ Module.register("uvx_magic_mirror", {
         "2349"
       ];
 
-      var timeValue = stopTimes[5];
+      let timeValue = stopTimes[5];
 
-      this.config.text = timeValue;
+      this.config.text = timeValue.toString();
     },
 
     getDom: function() {
@@ -162,7 +162,7 @@ Module.register("uvx_magic_mirror", {
 
         updateDisplay();
 
-        wrapper.innerHTML = this.config.timeValue;
+        wrapper.innerHTML = this.config.text;
         return wrapper;
     }
 
