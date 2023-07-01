@@ -30,9 +30,8 @@ Module.register("uvx_magic_mirror", {
       }, this.config.updateInterval);
     },
 
-    compareMinutes: function (currentMinutes, currentHour, currentDay, nextSchedule) {
-      let times = nextSchedule.split(":");
-      if (parseInt(times[1]) > currentMinutes) {
+    compareMinutes: function (currentMinutes, currentHour, currentDay, scheduleMinutes, usedArray) {
+      if (parseInt(scheduleMinutes) > currentMinutes) {
         return "Next UVX Bus:\n" + usedArray[x] + "\nHolidays may change service!";
       }
       else if (x < usedArray.length - 1 && parseInt((usedArray[x + 1].split(":")[0])) !== currentHour) {
@@ -258,7 +257,7 @@ Module.register("uvx_magic_mirror", {
         for(let x = 0; x < satTimes.length; x++) {
           let times = satTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
-            let timeText = this.compareMinutes(minutes, hour, day, satTimes[x]);
+            let timeText = this.compareMinutes(minutes, hour, day, times[1], satTimes);
             return timeText;
           }
           else if (x >= satTimes.length - 1) {
@@ -275,7 +274,7 @@ Module.register("uvx_magic_mirror", {
         for(let x = 0; x < weekTimes.length; x++) {
           let times = weekTimes[x].split(":");
           if (parseInt(times[0]) === hour) {
-            let timeText = this.compareMinutes(minutes, hour, day, weekTimes[x]);
+            let timeText = this.compareMinutes(minutes, hour, day, times[1], weekTimes);
             return timeText;
           }
           else if (x >= weekTimes.length - 1) {
