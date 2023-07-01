@@ -2,7 +2,7 @@ Module.register("uvx_magic_mirror", {
     
     defaults: {
 
-      "updateInterval" : 5000,
+      "updateInterval" : 60000,
       "fadeSpeed": 0,
       "text": "Start Text"
     },
