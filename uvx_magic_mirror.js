@@ -27,16 +27,14 @@ Module.register("uvx_magic_mirror", {
     },
 
     updateDisplay: function() {
-      const hour = moment().hour();
-      const minutes = moment().minute();
       const stopTimes = [
         "0434",
-        "0504",
-        "0534",
-        "0604",
+        ["0504",
+        "0534"],
+        ["0604",
         "0634",
-        "0649",
-        "0704",
+        "0649"],
+        ["0704",
         "0716",
         "0722",
         "0728",
@@ -44,8 +42,8 @@ Module.register("uvx_magic_mirror", {
         "0740",
         "0746",
         "0752",
-        "0758",
-        "0804",
+        "0758"],
+        ["0804",
         "0810",
         "0816",
         "0822",
@@ -54,8 +52,8 @@ Module.register("uvx_magic_mirror", {
         "0840",
         "0846",
         "0852",
-        "0858",
-        "0904",
+        "0858"],
+        ["0904",
         "0910",
         "0916",
         "0922",
@@ -64,41 +62,41 @@ Module.register("uvx_magic_mirror", {
         "0940",
         "0946",
         "0952",
-        "0958",
-        "1004",
+        "0958"],
+        ["1004",
         "1010",
         "1016",
         "1022",
         "1032",
         "1042",
-        "1052",
-        "1102",
+        "1052"],
+        ["1102",
         "1112",
         "1122",
         "1132",
         "1142",
-        "1152",
-        "1202",
+        "1152"],
+        ["1202",
         "1212",
         "1222",
         "1232",
         "1242",
-        "1252",
-        "1302",
+        "1252"],
+        ["1302",
         "1312",
         "1322",
         "1332",
         "1342",
-        "1352",
-        "1402",
+        "1352"],
+        ["1402",
         "1412",
         "1422",
         "1432",
         "1442",
         "1449",
         "1455",
-        "1401",
-        "1507",
+        "1401"],
+        ["1507",
         "1513",
         "1519",
         "1525",
@@ -106,8 +104,8 @@ Module.register("uvx_magic_mirror", {
         "1537",
         "1543",
         "1549",
-        "1555",
-        "1601",
+        "1555"],
+        ["1601",
         "1607",
         "1613",
         "1619",
@@ -116,8 +114,8 @@ Module.register("uvx_magic_mirror", {
         "1637",
         "1643",
         "1649",
-        "1655",
-        "1701",
+        "1655"],
+        ["1701",
         "1707",
         "1713",
         "1719",
@@ -125,57 +123,71 @@ Module.register("uvx_magic_mirror", {
         "1731",
         "1737",
         "1743",
-        "1752",
-        "1802",
+        "1752"],
+        ["1802",
         "1812",
         "1822",
         "1832",
         "1842",
-        "1852",
-        "1902",
+        "1852"],
+        ["1902",
         "1912",
         "1922",
         "1932",
         "1942",
-        "1952",
-        "2002",
+        "1952"],
+        ["2002",
         "2012",
         "2022",
         "2032",
         "2042",
-        "2054",
-        "2109",
+        "2054"],
+        ["2109",
         "2124",
         "2139",
-        "2154",
-        "2209",
+        "2154"],
+        ["2209",
         "2224",
         "2239",
-        "2259",
-        "2319",
+        "2259"],
+        ["2319",
         "2349",
         "2319",
-        "2349"
+        "2349"]
       ];
 
-      const generate = function() {
-        return Math.floor(Math.random() * stopTimes.length);
-      }
-
-      let timeIndex = generate();
-
-      while (timeIndex === this.lastIndex) {
-        timeIndex = generate();
-      }
-
-      this.lastIndex = timeIndex;
-
-      let timeValue = stopTimes[timeIndex];
-
-      return "Current Time: " + hour + ":" + minutes + "\nRandom Time: " + this.splitTimeValues(timeValue);
+      return "\nRandom Time: " + this.displaySchedule(timeValue);
     },
 
-    splitTimeValues: function(timeIn) {
+    displaySchedule: function(timeIn) {
+      //get current time values
+      const hour = moment().hour();
+      const minutes = moment().minute();
+
+      for (let x = 0; x < timeIn.length; x++) {
+        let hourOne = timeIn[x][0].charAt(0);
+        let hourTwo = timeIn[x][0].charAt(1);
+        numericalHour = parseInt(("" + hourOne + hourTwo));
+        if (numericalHour === hour) {
+          for (let y = 0; y < timeIn[x].length; y++) {
+            let minuteOne = timeIn[x][y].charAt(2);
+            let minuteTwo = timeIn[x][y].charAt(3);
+            numericalMinute = parseInt(("" + minuteOne + minuteTwo));
+            if (minutes < numericalMinute && y < timeIn[x].length) {
+              var nextScheduleMinutes = timeIn[x][y];
+              break;
+            }
+            else if (y >= timeIn[x].length && x < timeIn.length) {
+              var nextScheduleMinutes = timeIn[x+1][0];
+              break;
+            }
+            else if (y >= timeIn[x].length && x >= timeIn.length) {
+              var nextScheduleMinutes = timeIn[0][0];
+            }
+          }
+        }
+      }
+
       //create hours from schedule
       let hourOne = timeIn.charAt(0);
       let hourTwo = timeIn.charAt(1);
@@ -208,6 +220,12 @@ Module.register("uvx_magic_mirror", {
       }
 
       return displayHours + ":" + displayMinutes;
+    },
+
+
+
+    getNextStop: function(scheduleIn) {
+
     },
 
     getDom: function() {
