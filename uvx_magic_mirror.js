@@ -168,6 +168,9 @@ Module.register("uvx_magic_mirror", {
         if (times[0] === hour) {
           return "Next Stop:\n" + stopTimes[x];
         }
+        else if (x >= stopTimes.length - 1) {
+          return "Next Stop:\n" + stopTimes[0];
+        }
       }
 
       return "Next Stop:\nError";
