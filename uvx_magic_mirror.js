@@ -273,10 +273,10 @@ Module.register("uvx_magic_mirror", {
           }
           else if (x >= weekTimes.length - 1) {
             if (day === 5) {
-              return "Next Stop:\n" + satTimes[0] + day;
+              return "Next Stop:\n" + satTimes[0];
             }
             else {
-              return "Next Stop:\n" + weekTimes[0] + day;
+              return "Next Stop:\n" + weekTimes[0];
             }
             
           }
