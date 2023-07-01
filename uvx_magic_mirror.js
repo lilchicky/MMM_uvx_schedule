@@ -26,7 +26,7 @@ Module.register("uvx_magic_mirror", {
 
     updateDisplay: function() {
       const hour = moment().hour();
-      const minutes = Date.getMinutes();
+      const minutes = moment().minute();
       const stopTimes = [
         "0434",
         "0504",
