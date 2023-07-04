@@ -231,52 +231,90 @@ Module.register("uvx_magic_mirror", {
       "00:38"
     ];
 
+    // TODO: Create functions for repeated code. Lots of small edge cases make that very hard though
+
       const hour = moment().hour();
       const minutes = moment().minute();
       const day = moment().day();
 
       if (day === 0) {
+
+        // If Sunday, just say default message
         return "No Service Until Monday!";
       }
       else if (day === 6) {
+
+        // If Saturday, go through Saturday schedule times
         for(let x = 0; x < satTimes.length; x++) {
           let times = satTimes[x].split(":");
+
+          // If the current hour matches the iterated schedule hour (22:00 == 22:05)
           if (parseInt(times[0]) === hour) {
+
+            // If the iterated schedule time is LARGER than the current time, print as the next bus
             if (parseInt(times[1]) > minutes) {
               return "Next UVX Bus:\n" + satTimes[x] + "\nHolidays may change service!";
             }
+
+            // If we reach the end of matching hours, print the first time of the next schedule hours
+            // (last stop at 22:49, time is 22:50, print out first time in 23:00)
             else if (x < satTimes.length - 1 && parseInt((satTimes[x + 1].split(":")[0])) !== hour) {
               return "Next UVX Bus:\n" + satTimes[x + 1] + "\nHolidays may change service!";
             }
+
+            // If it is after the last Saturday stop, print out the Sunday message
+            // For edge cases like if it is 00:50
             else if (x >= satTimes.length - 1) {
               return "No Service Until Monday!";
             }
           }
+
+          // For if the current hour never matches a scheduled hour
           else if (x >= satTimes.length - 1) {
+
+            // If it is in the morning, print the first bus stop of the day
             if (hour <= 6) {
               return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
             }
+
+            // If it is at night, print out Sunday message
+            // I don't actually think this is ever necessary, because the schedule runs to midnight
             else {
               return "No Service Until Monday!";
             }
           }
         }
       }
+
+      // If it is a weekday...
       else if (day !== 0 && day !== 6) {
         for(let x = 0; x < weekTimes.length; x++) {
           let times = weekTimes[x].split(":");
+
+          // Same hour check as Saturday
           if (parseInt(times[0]) === hour) {
+
+            // If schedule minutes are greater than current minutes
             if (parseInt(times[1]) > minutes) {
               return "Next UVX Bus:\n" + weekTimes[x] + "\nHolidays may change service!";
             }
+
+            // Next hour jump, same as saturday
             else if (x < weekTimes.length - 1 && parseInt((weekTimes[x + 1].split(":")[0])) !== hour) {
               return "Next UVX Bus:\n" + weekTimes[x + 1] + "\nHolidays may change service!";
             }
+
+            // End of day check for midnight schedules
             else if (x >= weekTimes.length - 1) {
               return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
             }
           }
+
+          // Check for unlisted schedule hours
           else if (x >= weekTimes.length - 1) {
+
+            // If it is Friday morning, print the first weekday schedule
+            // If it is Friday night, print the first Saturday schedule
             if (day === 5) {
               if (hour <= 4) {
                 return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
@@ -285,6 +323,9 @@ Module.register("uvx_magic_mirror", {
                 return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
               }
             }
+
+            // For other days of the week (Mon - Thurs) just print the first schedule of 
+            // the weekday array
             else {
               return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
             }
@@ -302,8 +343,10 @@ Module.register("uvx_magic_mirror", {
 
         const display = document.createElement("span");
 
+        // Break the schedule message into parts based on the new line text
         const parts = this.updateDisplay().split("\n");
 
+        // Actually make each part on a new line by inserting a <br>
         for (const part of parts) {
           if (part != "") {
             display.appendChild(document.createTextNode(part));
