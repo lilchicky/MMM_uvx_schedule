@@ -46,17 +46,17 @@ Module.register("uvx_magic_mirror", {
 
           // If schedule minutes are greater than current minutes
           if (parseInt(times[1]) > minutes) {
-            return "Next UVX Bus:\n" + scheduleTimes[x] + "\nHolidays may change service!";
+            return "" + scheduleTimes[x];
           }
 
           // Next hour jump, same as saturday
           else if (x < scheduleTimes.length - 1 && parseInt((scheduleTimes[x + 1].split(":")[0])) !== hour) {
-            return "Next UVX Bus:\n" + scheduleTimes[x + 1] + "\nHolidays may change service!";
+            return "" + scheduleTimes[x + 1];
           }
 
           // End of day check for midnight schedules
           else if (x >= scheduleTimes.length - 1) {
-            return "Next UVX Bus:\n" + scheduleTimes[0] + "\nHolidays may change service!";
+            return "" + scheduleTimes[0];
           }
         }
 
@@ -67,17 +67,17 @@ Module.register("uvx_magic_mirror", {
           // If it is Friday night, print the first Saturday schedule
           if (day === 5) {
             if (hour <= 4) {
-              return "Next UVX Bus:\n" + scheduleTimes[0] + "\nHolidays may change service!";
+              return "" + scheduleTimes[0];
             }
             else {
-              return "Next UVX Bus:\n" + satScheduleTimes[0] + "\nHolidays may change service!";
+              return "" + satScheduleTimes[0];
             }
           }
 
           // For other days of the week (Mon - Thurs) just print the first schedule of 
           // the weekday array
           else {
-            return "Next UVX Bus:\n" + scheduleTimes[0] + "\nHolidays may change service!";
+            return "" + scheduleTimes[0];
           }
           
         }
@@ -86,48 +86,48 @@ Module.register("uvx_magic_mirror", {
     },
 
     getSatTimes: function(satTimesIn) {
-      let satTimesIn = satScheduleIn;
+      let satScheduleTimes = satTimesIn;
 
       let hour = moment().hour();
       let minutes = moment().minute();
 
       // If Saturday, go through Saturday schedule times
-      for(let x = 0; x < satScheduleIn.length; x++) {
-        let times = satScheduleIn[x].split(":");
+      for(let x = 0; x < satScheduleTimes.length; x++) {
+        let times = satScheduleTimes[x].split(":");
 
         // If the current hour matches the iterated schedule hour (22:00 == 22:05)
         if (parseInt(times[0]) === hour) {
 
           // If the iterated schedule time is LARGER than the current time, print as the next bus
           if (parseInt(times[1]) > minutes) {
-            return "Next UVX Bus:\n" + satScheduleIn[x] + "\nHolidays may change service!";
+            return "" + satScheduleTimes[x];
           }
 
           // If we reach the end of matching hours, print the first time of the next schedule hours
           // (last stop at 22:49, time is 22:50, print out first time in 23:00)
-          else if (x < satScheduleIn.length - 1 && parseInt((satScheduleIn[x + 1].split(":")[0])) !== hour) {
-            return "Next UVX Bus:\n" + satScheduleIn[x + 1] + "\nHolidays may change service!";
+          else if (x < satScheduleTimes.length - 1 && parseInt((satScheduleTimes[x + 1].split(":")[0])) !== hour) {
+            return "" + satScheduleTimes[x + 1];
           }
 
           // If it is after the last Saturday stop, print out the Sunday message
           // For edge cases like if it is 00:50
-          else if (x >= satScheduleIn.length - 1) {
-            return "No Service Until Monday!";
+          else if (x >= satScheduleTimes.length - 1) {
+            return "No Service Until Monday";
           }
         }
 
         // For if the current hour never matches a scheduled hour
-        else if (x >= satScheduleIn.length - 1) {
+        else if (x >= satScheduleTimes.length - 1) {
 
           // If it is in the morning, print the first bus stop of the day
           if (hour <= 6) {
-            return "Next UVX Bus:\n" + satScheduleIn[0] + "\nHolidays may change service!";
+            return "" + satScheduleTimes[0];
           }
 
           // If it is at night, print out Sunday message
           // I don't actually think this is ever necessary, because the schedule runs to midnight
           else {
-            return "No Service Until Monday!";
+            return "No Service Until Monday";
           }
         }
       }
@@ -344,16 +344,16 @@ Module.register("uvx_magic_mirror", {
       if (day === 0) {
 
         // If Sunday, just say default message
-        return "No Service Until Monday!";
+        return "Next UVX Buses:\nTowards Orem: No Service Until Monday\nTowards Provo: No Service Until Monday\nHolidays May Change Service!";
       }
       else if (day === 6) {
-        return "" + this.getSatTimes(satTimes);
+        return "Next UVX Buses:\nTowards Orem:" + this.getWeekTimes(weekTimes, satTimes) + "\nTowards Provo:" + this.getSatTimes(satTimes) + "\nHolidays May Change Service!";
         
       }
 
       // If it is a weekday...
       else if (day !== 0 && day !== 6) {
-        return "" + this.getWeekTimes(weekTimes, satTimes);
+        return "Next UVX Buses:\nTowards Orem:" + this.getWeekTimes(weekTimes, satTimes) + "\nTowards Provo:" + this.getSatTimes(satTimes) + "\nHolidays May Change Service!";
       }
 
       return "Next UVX Bus:\nError";
