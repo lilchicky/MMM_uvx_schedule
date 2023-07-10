@@ -23,11 +23,21 @@ Module.register("uvx_magic_mirror", {
       this.nextScheduleHours = 0;
 
       this.testText = "";
+
+      this.schedules = {};
+      this.schedules.weekOrem = "LOADING...";
+      this.sendSocketNotification('START', "start");
   
       // Schedule update timer.
       setInterval(() => {
         this.updateDom(this.config.fadeSpeed);
       }, this.config.updateInterval);
+    },
+
+    socketNotificationReceived: function(notification, payload) {
+      if (notification === "SCHEDULES") {
+        this.schedules.weekOrem = payload.week_orem;
+      }
     },
 
     getWeekTimes: function(scheduleIn, satScheduleIn) {
@@ -136,6 +146,7 @@ Module.register("uvx_magic_mirror", {
     },
 
     updateDisplay: function() {
+
       const weekTimesOrem = [
         "4:34",
         "5:04",
@@ -550,7 +561,7 @@ Module.register("uvx_magic_mirror", {
 
       // If it is a weekday...
       else if (day !== 0 && day !== 6) {
-        return "Next UVX Buses:\n \nTowards Orem: " + this.getWeekTimes(weekTimesOrem, satTimesOrem) + "\nTowards Provo: " + this.getWeekTimes(weekTimesProvo, satTimesProvo) + "\n \nPlan for a 5 minute walk,\nholidays may change service!";
+        return "Next UVX Buses:\n \nTowards Orem: " + this.getWeekTimes(this.schedules.weekOrem, satTimesOrem) + "\nTowards Provo: " + this.getWeekTimes(this.schedules.weekOrem, satTimesProvo) + "\n \nPlan for a 5 minute walk,\nholidays may change service!";
       }
 
       return "Next UVX Buses:\n \nError";
