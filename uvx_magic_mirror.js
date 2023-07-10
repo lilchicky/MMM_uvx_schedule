@@ -85,6 +85,55 @@ Module.register("uvx_magic_mirror", {
 
     },
 
+    getSatTimes: function(satTimesIn) {
+      let satTimesIn = satScheduleIn;
+
+      let hour = moment().hour();
+      let minutes = moment().minute();
+
+      // If Saturday, go through Saturday schedule times
+      for(let x = 0; x < satScheduleIn.length; x++) {
+        let times = satScheduleIn[x].split(":");
+
+        // If the current hour matches the iterated schedule hour (22:00 == 22:05)
+        if (parseInt(times[0]) === hour) {
+
+          // If the iterated schedule time is LARGER than the current time, print as the next bus
+          if (parseInt(times[1]) > minutes) {
+            return "Next UVX Bus:\n" + satScheduleIn[x] + "\nHolidays may change service!";
+          }
+
+          // If we reach the end of matching hours, print the first time of the next schedule hours
+          // (last stop at 22:49, time is 22:50, print out first time in 23:00)
+          else if (x < satScheduleIn.length - 1 && parseInt((satScheduleIn[x + 1].split(":")[0])) !== hour) {
+            return "Next UVX Bus:\n" + satScheduleIn[x + 1] + "\nHolidays may change service!";
+          }
+
+          // If it is after the last Saturday stop, print out the Sunday message
+          // For edge cases like if it is 00:50
+          else if (x >= satScheduleIn.length - 1) {
+            return "No Service Until Monday!";
+          }
+        }
+
+        // For if the current hour never matches a scheduled hour
+        else if (x >= satScheduleIn.length - 1) {
+
+          // If it is in the morning, print the first bus stop of the day
+          if (hour <= 6) {
+            return "Next UVX Bus:\n" + satScheduleIn[0] + "\nHolidays may change service!";
+          }
+
+          // If it is at night, print out Sunday message
+          // I don't actually think this is ever necessary, because the schedule runs to midnight
+          else {
+            return "No Service Until Monday!";
+          }
+        }
+      }
+
+    },
+
     updateDisplay: function() {
       const weekTimes = [
         "4:34",
@@ -298,47 +347,8 @@ Module.register("uvx_magic_mirror", {
         return "No Service Until Monday!";
       }
       else if (day === 6) {
-
-        // If Saturday, go through Saturday schedule times
-        for(let x = 0; x < satTimes.length; x++) {
-          let times = satTimes[x].split(":");
-
-          // If the current hour matches the iterated schedule hour (22:00 == 22:05)
-          if (parseInt(times[0]) === hour) {
-
-            // If the iterated schedule time is LARGER than the current time, print as the next bus
-            if (parseInt(times[1]) > minutes) {
-              return "Next UVX Bus:\n" + satTimes[x] + "\nHolidays may change service!";
-            }
-
-            // If we reach the end of matching hours, print the first time of the next schedule hours
-            // (last stop at 22:49, time is 22:50, print out first time in 23:00)
-            else if (x < satTimes.length - 1 && parseInt((satTimes[x + 1].split(":")[0])) !== hour) {
-              return "Next UVX Bus:\n" + satTimes[x + 1] + "\nHolidays may change service!";
-            }
-
-            // If it is after the last Saturday stop, print out the Sunday message
-            // For edge cases like if it is 00:50
-            else if (x >= satTimes.length - 1) {
-              return "No Service Until Monday!";
-            }
-          }
-
-          // For if the current hour never matches a scheduled hour
-          else if (x >= satTimes.length - 1) {
-
-            // If it is in the morning, print the first bus stop of the day
-            if (hour <= 6) {
-              return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
-            }
-
-            // If it is at night, print out Sunday message
-            // I don't actually think this is ever necessary, because the schedule runs to midnight
-            else {
-              return "No Service Until Monday!";
-            }
-          }
-        }
+        return "" + this.getSatTimes(satTimes);
+        
       }
 
       // If it is a weekday...
