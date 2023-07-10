@@ -30,6 +30,61 @@ Module.register("uvx_magic_mirror", {
       }, this.config.updateInterval);
     },
 
+    getWeekTimes: function(scheduleIn, satScheduleIn) {
+      let scheduleTimes = scheduleIn;
+      let satScheduleTimes = satScheduleIn;
+
+      let hour = moment().hour();
+      let minutes = moment().minute();
+      let day = moment().day();
+
+      for(let x = 0; x < scheduleTimes.length; x++) {
+        let times = scheduleTimes[x].split(":");
+
+        // Same hour check as Saturday
+        if (parseInt(times[0]) === hour) {
+
+          // If schedule minutes are greater than current minutes
+          if (parseInt(times[1]) > minutes) {
+            return "Next UVX Bus:\n" + scheduleTimes[x] + "\nHolidays may change service!";
+          }
+
+          // Next hour jump, same as saturday
+          else if (x < scheduleTimes.length - 1 && parseInt((scheduleTimes[x + 1].split(":")[0])) !== hour) {
+            return "Next UVX Bus:\n" + scheduleTimes[x + 1] + "\nHolidays may change service!";
+          }
+
+          // End of day check for midnight schedules
+          else if (x >= scheduleTimes.length - 1) {
+            return "Next UVX Bus:\n" + scheduleTimes[0] + "\nHolidays may change service!";
+          }
+        }
+
+        // Check for unlisted schedule hours
+        else if (x >= scheduleTimes.length - 1) {
+
+          // If it is Friday morning, print the first weekday schedule
+          // If it is Friday night, print the first Saturday schedule
+          if (day === 5) {
+            if (hour <= 4) {
+              return "Next UVX Bus:\n" + scheduleTimes[0] + "\nHolidays may change service!";
+            }
+            else {
+              return "Next UVX Bus:\n" + satScheduleTimes[0] + "\nHolidays may change service!";
+            }
+          }
+
+          // For other days of the week (Mon - Thurs) just print the first schedule of 
+          // the weekday array
+          else {
+            return "Next UVX Bus:\n" + scheduleTimes[0] + "\nHolidays may change service!";
+          }
+          
+        }
+      }
+
+    },
+
     updateDisplay: function() {
       const weekTimes = [
         "4:34",
@@ -288,50 +343,7 @@ Module.register("uvx_magic_mirror", {
 
       // If it is a weekday...
       else if (day !== 0 && day !== 6) {
-        for(let x = 0; x < weekTimes.length; x++) {
-          let times = weekTimes[x].split(":");
-
-          // Same hour check as Saturday
-          if (parseInt(times[0]) === hour) {
-
-            // If schedule minutes are greater than current minutes
-            if (parseInt(times[1]) > minutes) {
-              return "Next UVX Bus:\n" + weekTimes[x] + "\nHolidays may change service!";
-            }
-
-            // Next hour jump, same as saturday
-            else if (x < weekTimes.length - 1 && parseInt((weekTimes[x + 1].split(":")[0])) !== hour) {
-              return "Next UVX Bus:\n" + weekTimes[x + 1] + "\nHolidays may change service!";
-            }
-
-            // End of day check for midnight schedules
-            else if (x >= weekTimes.length - 1) {
-              return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
-            }
-          }
-
-          // Check for unlisted schedule hours
-          else if (x >= weekTimes.length - 1) {
-
-            // If it is Friday morning, print the first weekday schedule
-            // If it is Friday night, print the first Saturday schedule
-            if (day === 5) {
-              if (hour <= 4) {
-                return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
-              }
-              else {
-                return "Next UVX Bus:\n" + satTimes[0] + "\nHolidays may change service!";
-              }
-            }
-
-            // For other days of the week (Mon - Thurs) just print the first schedule of 
-            // the weekday array
-            else {
-              return "Next UVX Bus:\n" + weekTimes[0] + "\nHolidays may change service!";
-            }
-            
-          }
-        }
+        return "" + this.getWeekTimes(weekTimes, satTimes);
       }
 
       return "Next UVX Bus:\nError";
