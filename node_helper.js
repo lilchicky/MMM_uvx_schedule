@@ -6,7 +6,7 @@ module.exports = NodeHelper.create({
         
     },
 
-    socketNotificationRecieved: function(notification) {
+    socketNotificationRecieved: function(notification, payload) {
         if (notification === "START") {
             this.getSchedules();
         }
