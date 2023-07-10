@@ -539,18 +539,18 @@ Module.register("uvx_magic_mirror", {
       if (day === 0) {
 
         // If Sunday, just say default message
-        return "Next UVX Buses:\nTowards Orem: No Service Until Monday\nTowards Provo: No Service Until Monday\nHolidays May Change Service!";
+        return "Next UVX Buses:\n \nTowards Orem: No Service Until Monday\nTowards Provo: No Service Until Monday\nPlan for a 5 minute walk,\nholidays may change service!";
       }
 
       // If it is Saturday...
       else if (day === 6) {
-        return "Next UVX Buses:\n \nTowards Orem: " + this.getSatTimes(satTimesOrem) + "\nTowards Provo: " + this.getSatTimes(satTimesProvo) + "\n \nHolidays May Change Service!";
+        return "Next UVX Buses:\n \nTowards Orem: " + this.getSatTimes(satTimesOrem) + "\nTowards Provo: " + this.getSatTimes(satTimesProvo) + "\nPlan for a 5 minute walk,\nholidays may change service!";
         
       }
 
       // If it is a weekday...
       else if (day !== 0 && day !== 6) {
-        return "Next UVX Buses:\n \nTowards Orem: " + this.getWeekTimes(weekTimesOrem, satTimesOrem) + "\nTowards Provo: " + this.getWeekTimes(weekTimesProvo, satTimesProvo) + "\n \nHolidays May Change Service!";
+        return "Next UVX Buses:\n \nTowards Orem: " + this.getWeekTimes(weekTimesOrem, satTimesOrem) + "\nTowards Provo: " + this.getWeekTimes(weekTimesProvo, satTimesProvo) + "\nPlan for a 5 minute walk,\nholidays may change service!";
       }
 
       return "Next UVX Buses:\n \nError";
