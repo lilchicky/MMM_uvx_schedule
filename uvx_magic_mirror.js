@@ -347,13 +347,13 @@ Module.register("uvx_magic_mirror", {
         return "Next UVX Buses:\nTowards Orem: No Service Until Monday\nTowards Provo: No Service Until Monday\nHolidays May Change Service!";
       }
       else if (day === 6) {
-        return "Next UVX Buses:\nTowards Orem:" + this.getWeekTimes(weekTimes, satTimes) + "\nTowards Provo:" + this.getSatTimes(satTimes) + "\nHolidays May Change Service!";
+        return "Next UVX Buses:\n\nTowards Orem: " + this.getWeekTimes(weekTimes, satTimes) + "\nTowards Provo: " + this.getSatTimes(satTimes) + "\n\nHolidays May Change Service!";
         
       }
 
       // If it is a weekday...
       else if (day !== 0 && day !== 6) {
-        return "Next UVX Buses:\nTowards Orem:" + this.getWeekTimes(weekTimes, satTimes) + "\nTowards Provo:" + this.getSatTimes(satTimes) + "\nHolidays May Change Service!";
+        return "Next UVX Buses:\n\nTowards Orem: " + this.getWeekTimes(weekTimes, satTimes) + "\nTowards Provo: " + this.getSatTimes(satTimes) + "\n\nHolidays May Change Service!";
       }
 
       return "Next UVX Bus:\nError";
