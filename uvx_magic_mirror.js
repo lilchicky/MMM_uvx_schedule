@@ -41,7 +41,8 @@ Module.register("uvx_magic_mirror", {
       for(let x = 0; x < scheduleTimes.length; x++) {
         let times = scheduleTimes[x].split(":");
 
-        // Same hour check as Saturday
+        // Same hour check as Saturday 
+        // See: getSatTimes()
         if (parseInt(times[0]) === hour) {
 
           // If schedule minutes are greater than current minutes
@@ -91,7 +92,7 @@ Module.register("uvx_magic_mirror", {
       let hour = moment().hour();
       let minutes = moment().minute();
 
-      // If Saturday, go through Saturday schedule times
+      // Go through Saturday schedule times
       for(let x = 0; x < satScheduleTimes.length; x++) {
         let times = satScheduleTimes[x].split(":");
 
