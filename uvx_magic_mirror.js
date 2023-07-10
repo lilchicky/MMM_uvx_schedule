@@ -25,7 +25,7 @@ Module.register("uvx_magic_mirror", {
       this.testText = "";
 
       this.schedules = {};
-      this.schedules.weekOrem = "LOADING...";
+      this.schedules.weekOrem = "WOADING...";
       this.sendSocketNotification('START');
   
       // Schedule update timer.

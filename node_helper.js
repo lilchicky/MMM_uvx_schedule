@@ -20,6 +20,6 @@ module.exports = NodeHelper.create({
 
         scheduleList.week_orem = textByLine;
 
-        self.sendSocketNotification("SCHEDULES", scheduleList);
+        this.sendSocketNotification("SCHEDULES", scheduleList);
     }
 })
