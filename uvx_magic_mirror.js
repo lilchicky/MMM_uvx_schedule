@@ -264,8 +264,6 @@ Module.register("uvx_magic_mirror", {
         "00:19",
         "00:49"
     ];
-    const testJSON = JSON.stringify(weekTimesOrem);
-    localStorage.setItem("week_schedule_orem", testJSON);
     const weekTimesProvo = [
       "4:18",
       "4:48",
