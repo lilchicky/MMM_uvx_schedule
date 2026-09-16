@@ -36,7 +36,7 @@ def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.L
     future_trips = frame[frame.departure_time > today]
     future_trips = future_trips.sort_values(["route_id", "departure_time"])
     
-    if station is not None:
+    if station is not None and station:
         station_restricted = future_trips[future_trips.stop_name.str.contains(station, case = False) if isinstance(station, str) else future_trips.stop_id == station]
         
         if not station_restricted.empty:
