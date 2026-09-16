@@ -2,7 +2,7 @@ import pandas as pd
 import requests
 import logging
 
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 from google.transit import gtfs_realtime_pb2
 
 def parse_service_time(stop_time: str, today: datetime) -> datetime:
@@ -15,6 +15,9 @@ def parse_service_time(stop_time: str, today: datetime) -> datetime:
     
     :returns datetime: The adjusted time in the datetime UTC format
     '''
+    if pd.isna(stop_time):
+        return pd.NaT
+    
     h, m, s = map(int, stop_time.split(":"))
     
     adjusted_date = datetime(
@@ -31,7 +34,7 @@ def parse_service_time(stop_time: str, today: datetime) -> datetime:
 
 def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.Logger, station: str|int = None, num_routes: int = 1) -> dict: 
     future_trips = frame[frame.departure_time > today]
-    future_trips = future_trips.sort_values(["route_id", "direction_id", "departure_time"])
+    future_trips = future_trips.sort_values(["route_id", "departure_time"])
     
     if station is not None:
         station_restricted = future_trips[future_trips.stop_name.str.contains(station, case = False) if isinstance(station, str) else future_trips.stop_id == station]
@@ -41,13 +44,13 @@ def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.L
             
             matched_stations = future_trips.stop_name.unique()
             ms_len = len(matched_stations)
+            matched_stations = matched_stations if ms_len <= 5 else matched_stations[:5]
             matched_stations_f = (", ".join(matched_stations[:-1]) + f"{", " if ms_len > 2 else " "}and {matched_stations[-1]}") if ms_len > 1 else matched_stations[0]
             logger.info(f"{"Stop ID" if isinstance(station, int) else "Stop name"} [{station}] was found and resolved to {matched_stations_f}.")
         else:
             logger.warning(f"No stops could be found that match {"stop ID" if isinstance(station, int) else "stop name"} [{station}], so all stations will be included.")
             
     grouped_trips = future_trips.groupby(["route_id", "direction_id"]).head(num_routes).reset_index(drop = True)
-    print(grouped_trips)
     
     times = {}
     
@@ -93,12 +96,16 @@ def merge_rt_trip_updates(to_merge: pd.DataFrame, url: str, tz: datetime.tzinfo)
             })
     
     updated_trips = pd.DataFrame(pf_data, columns = ["trip_id", "stop_sequence", "new_arrival_time", "new_departure_time"])
+    
     updated_trips = pd.merge(
         to_merge,
         updated_trips,
         on = ["trip_id", "stop_sequence"],
         how = "left"
     )
-    updated_trips.sort_values(by = "departure_time", ascending = True, inplace = True)
+    
+    updated_trips = (
+        updated_trips.groupby(["departure_time", "direction_id", "stop_id"], as_index = False).agg("first")
+    )
     
     return updated_trips

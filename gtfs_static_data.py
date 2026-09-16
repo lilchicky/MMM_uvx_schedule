@@ -68,33 +68,37 @@ class StaticData:
             return None
         
     def get_trips_from_name(self, route_name: str) -> pd.DataFrame:
-        route_ids = self.routes[self.routes.route_long_name.str.contains(route_name, case = False)]
-        route_ids = route_ids.loc[:, ["route_id", "route_long_name"]]
+        route_ids = self.routes.loc[
+            self.routes.route_long_name.str.contains(route_name, case = False),
+            ["route_id", "route_long_name"]
+        ]
         
         self._LOGGER.info(f"Found {len(route_ids)} routes matching \"{route_name}\".")
 
-        trips_from_id = self.trips[self.trips.route_id.isin(route_ids.route_id.values)]
-        trips_from_id = pd.merge(
-            trips_from_id,
-            route_ids,
-            on = "route_id"
-        )
-
-        complete_trips = pd.merge(
-            self.stop_times.loc[:, ["trip_id", "stop_id", "arrival_time", "departure_time", "stop_sequence"]], 
-            trips_from_id.loc[:, ["trip_id", "trip_headsign", "direction_id", "route_long_name", "route_id"]], 
-            on = "trip_id"
-        )
-        complete_trips = pd.merge(
-            complete_trips, 
-            self.stops.loc[:, ["stop_id", "stop_name"]], 
-            on = "stop_id"
+        trips = self.trips.loc[
+            self.trips.route_id.isin(route_ids.route_id),
+            ["trip_id", "trip_headsign", "direction_id", "route_id"]
+        ]
+        
+        stop_times = self.stop_times.loc[
+            self.stop_times.trip_id.isin(trips.trip_id),
+            ["trip_id", "stop_id", "arrival_time", "departure_time", "stop_sequence"]
+        ]
+        
+        stops = self.stops.loc[
+            self.stops.stop_id.isin(stop_times.stop_id),
+            ["stop_id", "stop_name"]
+        ]
+        
+        complete_trips = (
+            trips
+                .merge(route_ids, on = "route_id", how = "left")
+                .merge(stop_times, on = "trip_id", how = "left")
+                .merge(stops, on = "stop_id", how = "left")
         )
 
         today = datetime.now(timezone.utc).astimezone(self.agency_tzinfo)
-        complete_trips["arrival_time"] = complete_trips["arrival_time"].map(lambda x: parse_service_time(x, today))
-        complete_trips["departure_time"] = complete_trips["departure_time"].map(lambda x: parse_service_time(x, today))
+        complete_trips.arrival_time = complete_trips.arrival_time.map(lambda x: parse_service_time(x, today))
+        complete_trips.departure_time = complete_trips.departure_time.map(lambda x: parse_service_time(x, today))
 
-        complete_trips.sort_values(by = "departure_time", ascending = True, inplace = True)
-
-        return complete_trips
+        return complete_trips.sort_values("departure_time").reset_index(drop = True)
