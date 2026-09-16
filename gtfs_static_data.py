@@ -82,7 +82,7 @@ class StaticData:
 
         complete_trips = pd.merge(
             self.stop_times.loc[:, ["trip_id", "stop_id", "arrival_time", "departure_time", "stop_sequence"]], 
-            trips_from_id.loc[:, ["trip_id", "trip_headsign", "direction_id", "route_long_name"]], 
+            trips_from_id.loc[:, ["trip_id", "trip_headsign", "direction_id", "route_long_name", "route_id"]], 
             on = "trip_id"
         )
         complete_trips = pd.merge(
@@ -95,6 +95,6 @@ class StaticData:
         complete_trips["arrival_time"] = complete_trips["arrival_time"].map(lambda x: parse_service_time(x, today))
         complete_trips["departure_time"] = complete_trips["departure_time"].map(lambda x: parse_service_time(x, today))
 
-        complete_trips.sort_values(by = "arrival_time", ascending = True, inplace = True)
+        complete_trips.sort_values(by = "departure_time", ascending = True, inplace = True)
 
         return complete_trips
