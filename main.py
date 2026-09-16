@@ -21,7 +21,7 @@ def main():
         return
     
     today = datetime.now(timezone.utc).astimezone(STATIC_DATA.agency_tzinfo)
-    frontrunner_trips = STATIC_DATA.get_trips_from_name("8")
+    frontrunner_trips = STATIC_DATA.get_trips_from_name("a")
     
     current_times = merge_rt_trip_updates(frontrunner_trips, UTA_TRIP_UPDATE_URL, STATIC_DATA.agency_tzinfo)
     
@@ -30,8 +30,11 @@ def main():
     
     dirs = get_next_north_south(current_times, today)
     for _, item in dirs.items():
-        print(item.get("north"))
-        print(item.get("south"))
+        if item.get("north") is not None:
+            print(item.get("north"))
+            
+        if item.get("south") is not None:
+            print(item.get("south"))
     
 if __name__ == "__main__":
     main()

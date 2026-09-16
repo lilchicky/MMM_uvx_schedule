@@ -28,43 +28,25 @@ def parse_service_time(stop_time: str, today: datetime) -> datetime:
     
     return adjusted_date + timedelta(days = h // 24)
 
-def get_next_north_south(frame: pd.DataFrame, today: datetime) -> dict:
+def get_next_north_south(frame: pd.DataFrame, today: datetime) -> dict: 
+    future_trips = frame[frame.departure_time > today]
+    future_trips = future_trips.sort_values(["route_id", "direction_id", "departure_time"])
+    
+    grouped_trips = future_trips.groupby(["route_id", "direction_id"]).first().reset_index()
+    
     times = {}
     
-    def get_dir_string(curr_row: pd.DataFrame, dir: str) -> None:
+    for _, row in grouped_trips.iterrows():
         dir_str = (
-            f"{curr_row.route_long_name}'s next departure towards {curr_row.trip_headsign.removeprefix("To ")} "
-            f"is at {curr_row.departure_time:%H:%M:%S} and is "
-            f"{"on time" if pd.isna(curr_row.new_departure_time) else f" leaving at {curr_row.new_departure_time:%H:%M:%S}"}."
+            f"{row.route_long_name}'s next departure towards {row.trip_headsign.removeprefix("To ")} "
+            f"is at {row.departure_time:%H:%M:%S} and is "
+            f"{"on time" if pd.isna(row.new_departure_time) else f" leaving at {row.new_departure_time:%H:%M:%S}"}."
         )
         
-        if curr_row.route_id in times:
-            times.get(curr_row.route_id).update({dir: dir_str})
+        if row.route_id not in times:
+            times[row.route_id] = {"north": None, "south": None}
             
-        else:
-            times.update({
-                curr_row.route_id: {
-                    dir: dir_str
-                }
-            })
-    
-    north_routes = []
-    south_routes = []
-    for _, row in frame.iterrows():
-        if row.departure_time > today:
-            in_north = row.route_id in north_routes
-            in_south = row.route_id in south_routes
-            
-            if (in_north and not row.direction_id) or (in_south and row.direction_id):
-                continue
-            
-            if not in_north and not row.direction_id:
-                get_dir_string(row, "north")
-                north_routes.append(row.route_id)
-                
-            if not in_south and row.direction_id:
-                get_dir_string(row, "south")
-                south_routes.append(row.route_id)
+        times.get(row.route_id)["north" if not row.direction_id else "south"] = dir_str
             
     return {
         key: {
