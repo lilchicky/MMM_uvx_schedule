@@ -6,7 +6,7 @@ import datetime
 
 from uta_logger import UTALogger
 from zoneinfo import ZoneInfo
-from datetime import timezone
+from datetime import timezone, datetime
 from util import parse_service_time
 
 class StaticData:
@@ -53,18 +53,18 @@ class StaticData:
         try:
             _gtfs_static = requests.get(url = url)
             _gtfs_static.raise_for_status()
-            StaticData.__LOGGER.info(f"Successfully connected to {url}: Response {_gtfs_static.status_code}")
+            StaticData._LOGGER.info(f"Successfully connected to {url}: Response {_gtfs_static.status_code}")
             
             obj = cls()
             
-            if not obj.__build(_gtfs_static.content):
+            if not obj._build(_gtfs_static.content):
                 return None
             
-            StaticData.__LOGGER.info(f"Successfully retrieved static GTFS data from {url}.")
+            StaticData._LOGGER.info(f"Successfully retrieved static GTFS data from {url}.")
             return obj
                     
         except requests.exceptions.HTTPError as e:
-            StaticData.__LOGGER.critical(f"Failed to connect to {url}: {e}")
+            StaticData._LOGGER.critical(f"Failed to connect to {url}: {e}")
             return None
         
     def get_trips_from_name(self, route_name: str) -> pd.DataFrame:

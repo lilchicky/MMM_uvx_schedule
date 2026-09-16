@@ -68,7 +68,7 @@ class UTALogger():
 
         self.clean_old_logs(log_folder)
 
-        self._logger.addHandler(file_handler)
+        self.logger.addHandler(file_handler)
 
     class Formatter(logging.Formatter):
         """Custom formatter class for loggers from UTALogger."""

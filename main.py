@@ -12,7 +12,7 @@ from config import (
     UTA_TRIP_UPDATE_URL
 )
 
-LOGGER = UTALogger().logger
+LOGGER = UTALogger("main", "main").logger
 STATIC_DATA = sd.from_url(UTA_GTFS_STATIC_URL)
 
 def main():
