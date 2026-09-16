@@ -23,6 +23,9 @@ def parse_service_time(stop_time: str, today: datetime) -> datetime:
     
     return adjusted_date + timedelta(days = h // 24)
 
+def timestamp_to_datetime(timestamp: int, tz: datetime._TzInfo = None):
+    return datetime.fromtimestamp(timestamp, tz)
+
 def get_trips_from_name(route_name: str, stops: pd.DataFrame, stop_times: pd.DataFrame, routes: pd.DataFrame, trips: pd.DataFrame, agency: pd.DataFrame):
     route_id = routes[routes.route_long_name.str.contains(route_name)]
     route_id = route_id["route_id"].item()
@@ -51,6 +54,7 @@ def get_trips_from_name(route_name: str, stops: pd.DataFrame, stop_times: pd.Dat
     return complete_trips
 
 def main():
+    print("starting...")
     feed = gtfs_realtime_pb2.FeedMessage()
     response = requests.get("https://apps.rideuta.com/tms/gtfs/TripUpdate")
     feed.ParseFromString(response.content)
@@ -83,31 +87,28 @@ def main():
         print(f"Arriving at {row.stop_name} at {row.arrival_time.strftime("%H:%M:%S")} on {row.arrival_time.strftime("%B %d, %Y")}. The trip is heading {"north" if row.direction_id else "south"}.")
         break
     
-    print(frontrunner_trips)
-    
-    new_times = {}
+    pf_data = []
     
     for entity in feed.entity:
-        if entity.HasField("trip_update"):
-            new_times.update({entity.trip_update.trip.trip_id: []})
-            #if entity.trip_update.HasField("stop_time_update"):
-            for update in entity.trip_update.stop_time_update:
-                new_times.get(entity.trip_update.trip.trip_id).append(update.stop_sequence)
-
-    for entity in feed.entity:
-        if entity.HasField("trip_update"):
-            for _, row in frontrunner_trips.iterrows():
-                if row.trip_id == int(entity.trip_update.trip.trip_id):
-                    for thing in entity.trip_update.stop_time_update:
-                        if row.stop_sequence == thing.stop_sequence:
-                            print(datetime.fromtimestamp(thing.arrival.time, ZoneInfo(agency["agency_timezone"].item())))
-                            print(f"Originally: {row.arrival_time}")
-                            print(f"Trip stop sequence: {row.stop_sequence}, read stop sequence: {thing.stop_sequence}")
-                else:
-                    continue
-                print(f"Arriving at {row.stop_name} at {row.arrival_time.strftime("%H:%M:%S")} on {row.arrival_time.strftime("%B %d, %Y")}. The trip is heading {"north" if row.direction_id else "south"}.")
+        if not entity.HasField("trip_update"):
+            continue
+        
+        for update in entity.trip_update.stop_time_update:
+            pf_data.append({
+                "trip_id": int(entity.trip_update.trip.trip_id), 
+                "stop_sequence": int(update.stop_sequence), 
+                "new_arrival_time": timestamp_to_datetime(update.arrival.time, ZoneInfo(agency["agency_timezone"].item())), 
+                "new_departure_time": timestamp_to_datetime(update.departure.time, ZoneInfo(agency["agency_timezone"].item()))
+            })
                 
-    print(new_times)
+    current_times = pd.DataFrame(pf_data)
+    current_times = pd.merge(
+        frontrunner_trips,
+        current_times,
+        on = ["trip_id", "stop_sequence"],
+        how = "left"
+    )
+    print(current_times[current_times["new_arrival_time"].notnull()])
     
 if __name__ == "__main__":
     main()
