@@ -62,7 +62,7 @@ def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.L
         dir_str = (
             f"{row.route_long_name.title()}'s next departure {f"from {row.stop_name}"} towards {row.trip_headsign.removeprefix("To ").title()} "
             f"is at {row.departure_time:%H:%M:%S} and is "
-            f"{"on time" if pd.isna(row.new_departure_time) else f"leaving at {row.new_departure_time:%H:%M:%S} ({(row.new_departure_time - row.departure_time):%H:%M:%S} late)"}."
+            f"{"on time" if pd.isna(row.new_departure_time) else f"predicted to leave at {row.new_departure_time:%H:%M:%S} ({(row.new_departure_time - row.departure_time)} late)"}."
         )
         
         if row.route_id not in times:
