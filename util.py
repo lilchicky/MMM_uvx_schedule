@@ -38,7 +38,7 @@ def get_next_north_south(frame: pd.DataFrame, today: datetime) -> dict:
     
     for _, row in grouped_trips.iterrows():
         dir_str = (
-            f"{row.route_long_name}'s next departure towards {row.trip_headsign.removeprefix("To ")} "
+            f"{row.route_long_name.title()}'s next departure towards {row.trip_headsign.removeprefix("To ").title()} "
             f"is at {row.departure_time:%H:%M:%S} and is "
             f"{"on time" if pd.isna(row.new_departure_time) else f" leaving at {row.new_departure_time:%H:%M:%S}"}."
         )
