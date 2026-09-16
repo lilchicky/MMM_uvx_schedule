@@ -8,17 +8,23 @@ certifi==2026.7.22
     # via requests
 charset-normalizer==3.5.1
     # via requests
+gtfs-realtime-bindings==2.2.0
+    # via -r requirements.in
 idna==3.19
     # via requests
 numpy==2.5.3
     # via pandas
 pandas==3.0.5
     # via -r requirements.in
+protobuf==7.36.1
+    # via gtfs-realtime-bindings
 python-dateutil==2.9.0.post0
     # via pandas
 requests==2.34.2
     # via -r requirements.in
 six==1.17.0
     # via python-dateutil
-urllib3==2.7.0
+tzdata==2026.4
+    # via pandas
+urllib3==2.8.0
     # via requests

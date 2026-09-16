@@ -6,6 +6,8 @@ to read from JSON files to make uploading schedules easier.
 
 Currently doesn't account for holiday schedules, because the UTA API is a nightmare to figure out for me, so I just added a static warning to check holiday times.
 
+**UPDATE**: Currently nonfunctional, but I am writing a python script to access the actual UTA GTFS feed for live schedules and stuff.
+
 _To install through command line on Raspberry Pi:_\
 _cd ~/MagicMirror/modules_\
 _git clone https://github.com/lilchicky/MMM_uvx_schedule.git_
