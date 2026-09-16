@@ -1,5 +1,6 @@
 import pandas as pd
 import requests
+import logging
 
 from datetime import timedelta, datetime
 from google.transit import gtfs_realtime_pb2
@@ -28,17 +29,31 @@ def parse_service_time(stop_time: str, today: datetime) -> datetime:
     
     return adjusted_date + timedelta(days = h // 24)
 
-def get_next_north_south(frame: pd.DataFrame, today: datetime) -> dict: 
+def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.Logger, station: str|int = None, num_routes: int = 1) -> dict: 
     future_trips = frame[frame.departure_time > today]
     future_trips = future_trips.sort_values(["route_id", "direction_id", "departure_time"])
     
-    grouped_trips = future_trips.groupby(["route_id", "direction_id"]).first().reset_index()
+    if station is not None:
+        station_restricted = future_trips[future_trips.stop_name.str.contains(station, case = False) if isinstance(station, str) else future_trips.stop_id == station]
+        
+        if not station_restricted.empty:
+            future_trips = station_restricted
+            
+            matched_stations = future_trips.stop_name.unique()
+            ms_len = len(matched_stations)
+            matched_stations_f = (", ".join(matched_stations[:-1]) + f"{", " if ms_len > 2 else " "}and {matched_stations[-1]}") if ms_len > 1 else matched_stations[0]
+            logger.info(f"{"Stop ID" if isinstance(station, int) else "Stop name"} [{station}] was found and resolved to {matched_stations_f}.")
+        else:
+            logger.warning(f"No stops could be found that match {"stop ID" if isinstance(station, int) else "stop name"} [{station}], so all stations will be included.")
+            
+    grouped_trips = future_trips.groupby(["route_id", "direction_id"]).head(num_routes).reset_index(drop = True)
+    print(grouped_trips)
     
     times = {}
     
     for _, row in grouped_trips.iterrows():
         dir_str = (
-            f"{row.route_long_name.title()}'s next departure towards {row.trip_headsign.removeprefix("To ").title()} "
+            f"{row.route_long_name.title()}'s next departure {f"from {row.stop_name}"} towards {row.trip_headsign.removeprefix("To ").title()} "
             f"is at {row.departure_time:%H:%M:%S} and is "
             f"{"on time" if pd.isna(row.new_departure_time) else f" leaving at {row.new_departure_time:%H:%M:%S}"}."
         )

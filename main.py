@@ -21,14 +21,16 @@ def main():
         return
     
     today = datetime.now(timezone.utc).astimezone(STATIC_DATA.agency_tzinfo)
-    frontrunner_trips = STATIC_DATA.get_trips_from_name("a")
+    frontrunner_trips = STATIC_DATA.get_trips_from_name("frontrunner")
     
     current_times = merge_rt_trip_updates(frontrunner_trips, UTA_TRIP_UPDATE_URL, STATIC_DATA.agency_tzinfo)
     
     print(current_times[current_times["new_arrival_time"].notnull()])
     print(current_times)
     
-    dirs = get_next_north_south(current_times, today)
+    print(frontrunner_trips)
+    
+    dirs = get_next_north_south(current_times, today, LOGGER, station = "vineyard", num_routes = 3)
     for _, item in dirs.items():
         if item.get("north") is not None:
             print(item.get("north"))
