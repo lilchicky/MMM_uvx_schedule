@@ -12,6 +12,8 @@ gtfs-realtime-bindings==2.2.0
     # via -r requirements.in
 idna==3.19
     # via requests
+logging==0.4.9.6
+    # via -r requirements.in
 numpy==2.5.3
     # via pandas
 pandas==3.0.5
