@@ -68,7 +68,7 @@ class StaticData:
             return None
         
     def get_trips_from_name(self, route_name: str) -> pd.DataFrame:
-        route_id = self.routes[self.routes.route_long_name.str.contains(route_name)]
+        route_id = self.routes[self.routes.route_long_name.str.contains(route_name, case = False)]
         route_id = route_id["route_id"].item()
 
         trips_from_id = self.trips[self.trips.route_id == route_id].drop("route_id", axis = 1)
