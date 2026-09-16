@@ -71,7 +71,7 @@ def main():
     
     for _, row in current_times.iterrows():
         if row.departure_time > today:
-            print(f"Next departure is at {row.departure_time:%H:%M:%S}. It is {"on time" if pd.isna(row.new_departure_time) else f" leaving at {row.new_departure_time:%H:%M:%S}"}.")
+            print(f"{row.route_long_name}'s next departure towards {row.trip_headsign} is at {row.departure_time:%H:%M:%S} and is {"on time" if pd.isna(row.new_departure_time) else f" leaving at {row.new_departure_time:%H:%M:%S}"}.")
             break
     
 if __name__ == "__main__":

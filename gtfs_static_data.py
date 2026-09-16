@@ -73,11 +73,16 @@ class StaticData:
         
         self._LOGGER.info(f"Found {len(route_ids)} routes matching \"{route_name}\".")
 
-        trips_from_id = self.trips[self.trips.route_id.isin(route_ids.route_id.values)].drop("route_id", axis = 1)
+        trips_from_id = self.trips[self.trips.route_id.isin(route_ids.route_id.values)]
+        trips_from_id = pd.merge(
+            trips_from_id,
+            route_ids,
+            on = "route_id"
+        )
 
         complete_trips = pd.merge(
             self.stop_times.loc[:, ["trip_id", "stop_id", "arrival_time", "departure_time", "stop_sequence"]], 
-            trips_from_id.loc[:, ["trip_id", "trip_headsign", "direction_id"]], 
+            trips_from_id.loc[:, ["trip_id", "trip_headsign", "direction_id", "route_long_name"]], 
             on = "trip_id"
         )
         complete_trips = pd.merge(
