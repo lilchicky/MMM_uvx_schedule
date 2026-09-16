@@ -68,10 +68,12 @@ class StaticData:
             return None
         
     def get_trips_from_name(self, route_name: str) -> pd.DataFrame:
-        route_id = self.routes[self.routes.route_long_name.str.contains(route_name, case = False)]
-        route_id = route_id["route_id"].item()
+        route_ids = self.routes[self.routes.route_long_name.str.contains(route_name, case = False)]
+        route_ids = route_ids.loc[:, ["route_id", "route_long_name"]]
+        
+        self._LOGGER.info(f"Found {len(route_ids)} routes matching \"{route_name}\".")
 
-        trips_from_id = self.trips[self.trips.route_id == route_id].drop("route_id", axis = 1)
+        trips_from_id = self.trips[self.trips.route_id.isin(route_ids.route_id.values)].drop("route_id", axis = 1)
 
         complete_trips = pd.merge(
             self.stop_times.loc[:, ["trip_id", "stop_id", "arrival_time", "departure_time", "stop_sequence"]], 

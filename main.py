@@ -20,6 +20,7 @@ def main():
     if STATIC_DATA is None:
         LOGGER.critical(f"The static GTFS data was unable to be retirieved, aborting.")
         return
+    today = datetime.now(timezone.utc).astimezone(STATIC_DATA.agency_tzinfo)
     
     gtfs_trip_update_pf = requests.get(url = UTA_TRIP_UPDATE_URL)
     gtfs_trip_update_pf.raise_for_status()
@@ -28,17 +29,17 @@ def main():
     feed.ParseFromString(gtfs_trip_update_pf.content)
     
     uvx_trips = STATIC_DATA.get_trips_from_name("UVX")
-    frontrunner_trips = STATIC_DATA.get_trips_from_name("FrontRunner")
+    frontrunner_trips = STATIC_DATA.get_trips_from_name("8")
 
     for _, row in frontrunner_trips.iterrows():
-        if (datetime.now(timezone.utc).astimezone(STATIC_DATA.agency_tzinfo) > row.arrival_time):
+        if (today > row.arrival_time):
             continue
         
         print(f"Arriving at {row.stop_name} at {row.arrival_time.strftime("%H:%M:%S")} on {row.arrival_time.strftime("%B %d, %Y")}. The trip is heading {"north" if row.direction_id else "south"}.")
         break
 
     for _, row in uvx_trips.iterrows():
-        if (datetime.now(timezone.utc).astimezone(STATIC_DATA.agency_tzinfo) > row.arrival_time):
+        if (today > row.arrival_time):
             continue
 
         print(f"Arriving at {row.stop_name} at {row.arrival_time.strftime("%H:%M:%S")} on {row.arrival_time.strftime("%B %d, %Y")}. The trip is heading {"north" if row.direction_id else "south"}.")
@@ -54,8 +55,8 @@ def main():
             pf_data.append({
                 "trip_id": int(entity.trip_update.trip.trip_id), 
                 "stop_sequence": int(update.stop_sequence), 
-                "new_arrival_time": datetime.fromtimestamp(update.arrival.time, ZoneInfo(STATIC_DATA.agency["agency_timezone"].item())), 
-                "new_departure_time": datetime.fromtimestamp(update.departure.time, ZoneInfo(STATIC_DATA.agency["agency_timezone"].item()))
+                "new_arrival_time": datetime.fromtimestamp(update.arrival.time, STATIC_DATA.agency_tzinfo), 
+                "new_departure_time": datetime.fromtimestamp(update.departure.time, STATIC_DATA.agency_tzinfo)
             })
                 
     current_times = pd.DataFrame(pf_data)
@@ -66,6 +67,12 @@ def main():
         how = "left"
     )
     print(current_times[current_times["new_arrival_time"].notnull()])
+    print(current_times)
+    
+    for _, row in current_times.iterrows():
+        if row.departure_time > today:
+            print(f"Next departure is at {row.departure_time:%H:%M:%S}. It is {"on time" if pd.isna(row.new_departure_time) else f" leaving at {row.new_departure_time:%H:%M:%S}"}.")
+            break
     
 if __name__ == "__main__":
     main()
