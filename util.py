@@ -45,7 +45,11 @@ def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.L
             matched_stations = future_trips.stop_name.unique()
             ms_len = len(matched_stations)
             matched_stations = matched_stations if ms_len <= 5 else matched_stations[:5]
-            matched_stations_f = (", ".join(matched_stations[:-1]) + f"{", " if ms_len > 2 else " "}and {matched_stations[-1]}") if ms_len > 1 else matched_stations[0]
+            matched_stations_f = (
+                f"{", ".join(matched_stations[:-1])}"
+                f"{", " if ms_len > 2 else " "}and"
+                f" {matched_stations[-1] if len(matched_stations) == ms_len else f"{ms_len - len(matched_stations)} more"}" if ms_len > 1 else matched_stations[0]
+            )
             logger.info(f"{"Stop ID" if isinstance(station, int) else "Stop name"} [{station}] was found and resolved to {matched_stations_f}.")
         else:
             logger.warning(f"No stops could be found that match {"stop ID" if isinstance(station, int) else "stop name"} [{station}], so all stations will be included.")
@@ -58,7 +62,7 @@ def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.L
         dir_str = (
             f"{row.route_long_name.title()}'s next departure {f"from {row.stop_name}"} towards {row.trip_headsign.removeprefix("To ").title()} "
             f"is at {row.departure_time:%H:%M:%S} and is "
-            f"{"on time" if pd.isna(row.new_departure_time) else f" leaving at {row.new_departure_time:%H:%M:%S}"}."
+            f"{"on time" if pd.isna(row.new_departure_time) else f"leaving at {row.new_departure_time:%H:%M:%S} ({(row.new_departure_time - row.departure_time):%H:%M:%S} late)"}."
         )
         
         if row.route_id not in times:
