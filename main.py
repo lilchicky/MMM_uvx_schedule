@@ -30,22 +30,24 @@ def main():
         return
     
     today = datetime.now(timezone.utc).astimezone(gd.agency_tzinfo)
-    frontrunner_trips = gd.get_trips_from_name("frontrunner")
+    frontrunner_trips = gd.get_trips_from_name("e")
     
     if frontrunner_trips is not None:
         current_times = gd.get_current(frontrunner_trips, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
 
-        print(current_times[current_times.new_departure_time.notnull()])
+        #print(current_times[current_times.new_departure_time.notnull()])
         #print(current_times)
         #print(frontrunner_trips)
 
-        dirs = get_next_departures(current_times, today, LOGGER, station = "vineyard", num_routes = 3)
+        dirs = get_next_departures(
+            current_times, today, 
+            LOGGER, 
+            station = "e", 
+            num_routes = 3
+        )
 
         for _, departures in dirs.items():
             print(build_departure_string(departures))
-            break
-            print(build_departure_string(item.get("north")))
-            print(build_departure_string(item.get("south")))
     
 if __name__ == "__main__":
     main()

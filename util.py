@@ -89,6 +89,10 @@ def build_departure_string(departures: dict) -> str:
         
     def get_formatted_departures(is_north: bool) -> str:
         times = departures.get(f"departures_{"north" if is_north else "south"}")
+        
+        if not times:
+            return ""
+        
         heading = departures.get(f"trip_headsign_{"north" if is_north else "south"}").removeprefix("To ").title()
         times_to_list = [i[(0 if i[1] is None else 1)].strftime("%H:%M:%S") for i in times]
 
@@ -96,14 +100,14 @@ def build_departure_string(departures: dict) -> str:
         departure_times = f"{get_plural(times, "is", "are")} at {format_readable_list(times_to_list)}"
         
         return f"{departure_locations} {departure_times}"
+        
+    north = f"{get_formatted_departures(True)}"
+    south = f"{get_formatted_departures(False)}"
     
-    return f"{get_formatted_departures(True)}\n{get_formatted_departures(False)}."
+    north += "." if north else ""
+    south += "." if south else ""
     
-    return (
-            f"{departures.route_long_name.title()}'s next departure from {departures.stop_name} towards {departures.trip_headsign.removeprefix("To ").title()} "
-            f"is at {departures.departure_time:%H:%M:%S} and is "
-            f"{"on time" if pd.isna(departures.new_departure_time) else f"predicted to leave at {departures.new_departure_time:%H:%M:%S} ({(departures.new_departure_time - departures.departure_time)} late)"}."
-        )
+    return f"{north}{"\n" if north and south else ""}{south}"
     
 def format_readable_list(input: list, max_len: int = 0, isolate_char: str = "") -> str:
     original_len = len(input)
