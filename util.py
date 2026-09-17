@@ -2,8 +2,12 @@ import pandas as pd
 import requests
 import logging
 
-from datetime import timedelta, datetime, timezone
+from datetime import timedelta, datetime
 from google.transit import gtfs_realtime_pb2
+from config import (
+    UTA_TRIP_UPDATE_URL,
+    UTA_VEHICLES_URL
+)
 
 def parse_service_time(stop_time: str, today: datetime) -> datetime:
     '''
@@ -32,9 +36,17 @@ def parse_service_time(stop_time: str, today: datetime) -> datetime:
     
     return adjusted_date + timedelta(days = h // 24)
 
-def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.Logger, station: str|int = "", num_routes: int = 1) -> dict: 
+def get_protobuf_data(url: str) -> gtfs_realtime_pb2.FeedEntity:
+    pb = requests.get(url = url)
+    pb.raise_for_status()
+        
+    feed = gtfs_realtime_pb2.FeedMessage()
+    feed.ParseFromString(pb.content)
+    
+    return feed
+
+def get_next_departures(frame: pd.DataFrame, today: datetime, logger: logging.Logger, station: str|int = "", num_routes: int = 1) -> dict: 
     future_trips = frame[frame.departure_time > today]
-    future_trips = future_trips.sort_values(["route_id", "departure_time"])
     
     if station:
         station_restricted = (
@@ -44,83 +56,125 @@ def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.L
         
         if not station_restricted.empty:
             future_trips = station_restricted
-
-            future_trips.apply(
-                lambda x: (
-                    print(x.route_id)
-                ),
-                result_type = "broadcast",
-                axis = 1
-            )
             
             matched_stations = future_trips.stop_name.unique()
-            ms_len = len(matched_stations)
-            matched_stations = matched_stations if ms_len <= 5 else matched_stations[:5]
-            matched_stations_f = (
-                f"{", ".join(matched_stations[:-1])}"
-                f"{", " if ms_len > 2 else " "}and"
-                f" {matched_stations[-1] if len(matched_stations) == ms_len else f"{ms_len - len(matched_stations)} more"}" if ms_len > 1 else matched_stations[0]
-            )
-            logger.info(f"{"Stop ID" if isinstance(station, int) else "Stop name"} [{station}] was found and resolved to {matched_stations_f}.")
+            logger.info(f"{"Stop ID" if isinstance(station, int) else "Stop name"} [{station}] was found and resolved to {format_readable_list(matched_stations, max_len = 5, isolate_char = "\"")}.")
         else:
             logger.warning(f"No stops could be found that match {"stop ID" if isinstance(station, int) else "stop name"} [{station}], so all stations will be included.")
             
+    future_trips = future_trips.sort_values(["route_id", "direction_id", "departure_time"])
     grouped_trips = future_trips.groupby(["route_id", "direction_id"]).head(num_routes).reset_index(drop = True)
 
     times = {}
 
     for _, row in grouped_trips.iterrows():
-        dir_str = (
-            f"{row.route_long_name.title()}'s next departure {f"from {row.stop_name}"} towards {row.trip_headsign.removeprefix("To ").title()} "
-            f"is at {row.departure_time:%H:%M:%S} and is "
-            f"{"on time" if pd.isna(row.new_departure_time) else f"predicted to leave at {row.new_departure_time:%H:%M:%S} ({(row.new_departure_time - row.departure_time)} late)"}."
-        )
-        
         if row.route_id not in times:
-            times[row.route_id] = {"north": None, "south": None}
+            times[row.route_id] = {
+                "route_name": row.route_long_name,
+                "stop_name": row.stop_name,
+                "trip_headsign_north": None,
+                "trip_headsign_south": None,
+                "departures_north": [],
+                "departures_south": []
+            }
+        
+        departure = times.get(row.route_id)
+        dir_suffix = "_north" if not row.direction_id else "_south"
+        
+        if departure[f"trip_headsign{dir_suffix}"] is None:
+            departure.update({f"trip_headsign{dir_suffix}": row.trip_headsign})
             
-        times.get(row.route_id)["north" if not row.direction_id else "south"] = dir_str
+        departure[f"departures{dir_suffix}"].append([
+            row.departure_time,
+            (None if pd.isna(row.new_departure_time) else row.new_departure_time)
+        ])
             
-    return {
-        key: {
-            direction: route.get(direction)
-            for direction in ("north", "south")
-        }
-        for key, route in times.items()
-    }
+    return times
 
-def merge_rt_trip_updates(to_merge: pd.DataFrame, url: str, tz: datetime.tzinfo) -> pd.DataFrame:
-    gtfs_trip_update_pf = requests.get(url = url)
-    gtfs_trip_update_pf.raise_for_status()
+def merge_rt_trip_updates(to_merge: pd.DataFrame, tz: datetime.tzinfo) -> pd.DataFrame:
+    update_feed = get_protobuf_data(UTA_TRIP_UPDATE_URL)
+    vehicle_feed = get_protobuf_data(UTA_VEHICLES_URL)
     
-    feed = gtfs_realtime_pb2.FeedMessage()
-    feed.ParseFromString(gtfs_trip_update_pf.content)
+    update_data = []
+    vehicle_data = []
     
-    pf_data = []
-    
-    for entity in feed.entity:
+    for entity in update_feed.entity:
         if not entity.HasField("trip_update"):
             continue
         
         for update in entity.trip_update.stop_time_update:
-            pf_data.append({
+            update_data.append({
                 "trip_id": int(entity.trip_update.trip.trip_id), 
                 "stop_sequence": int(update.stop_sequence), 
                 "new_arrival_time": datetime.fromtimestamp(update.arrival.time, tz), 
                 "new_departure_time": datetime.fromtimestamp(update.departure.time, tz)
             })
+            
+    for entity in vehicle_feed.entity:
+        if not entity.HasField("vehicle"):
+            continue
+            
+        vehicle_data.append({"trip_id": entity.vehicle.trip.trip_id})
     
-    updated_trips = pd.DataFrame(pf_data, columns = ["trip_id", "stop_sequence", "new_arrival_time", "new_departure_time"])
+    updated_trips = pd.DataFrame(update_data, columns = ["trip_id", "stop_sequence", "new_arrival_time", "new_departure_time"])
+    updated_vehicles = pd.DataFrame(vehicle_data, columns = ["trip_id"])
     
-    updated_trips = pd.merge(
+    updated_trips = updated_trips[updated_trips.trip_id.isin(updated_vehicles.trip_id.unique())]
+    
+    all_trips = pd.merge(
         to_merge,
         updated_trips,
         on = ["trip_id", "stop_sequence"],
         how = "left"
     )
     
-    updated_trips = (
-        updated_trips.groupby(["departure_time", "direction_id", "stop_id"], as_index = False).agg("first")
-    )
+    return all_trips
+
+def build_departure_string(departures: dict) -> str:
     
-    return updated_trips
+    def get_plural(to_check: list, is_singlular: str, is_plural: str) -> str:
+        if len(to_check) == 1:
+            return is_singlular
+        return is_plural
+        
+    def get_formatted_departures(is_north: bool) -> str:
+        times = departures.get(f"departures_{"north" if is_north else "south"}")
+        heading = departures.get(f"trip_headsign_{"north" if is_north else "south"}").removeprefix("To ").title()
+        times_to_list = [i[(0 if i[1] is None else 1)].strftime("%H:%M:%S") for i in times]
+
+        departure_locations = f"{departures.get("route_name").title()}'s next {get_plural(times, "departure", f"{len(times)} departures")} from {departures.get("stop_name")} towards {heading}"
+        departure_times = f"{get_plural(times, "is", "are")} at {format_readable_list(times_to_list)}"
+        
+        return f"{departure_locations} {departure_times}"
+    
+    return f"{get_formatted_departures(True)}\n{get_formatted_departures(False)}."
+    
+    return (
+            f"{departures.route_long_name.title()}'s next departure from {departures.stop_name} towards {departures.trip_headsign.removeprefix("To ").title()} "
+            f"is at {departures.departure_time:%H:%M:%S} and is "
+            f"{"on time" if pd.isna(departures.new_departure_time) else f"predicted to leave at {departures.new_departure_time:%H:%M:%S} ({(departures.new_departure_time - departures.departure_time)} late)"}."
+        )
+    
+def format_readable_list(input: list, max_len: int = 0, isolate_char: str = "") -> str:
+    original_len = len(input)
+    truncated = False
+    
+    def surround(val: any):
+        return f"{isolate_char}{val}{isolate_char}"
+    
+    if original_len <= 1:
+        return surround(input[0])
+    
+    if original_len == 2:
+        return f"{surround(input[0])} and {surround[input[1]]}"
+    
+    if max_len > 0 and original_len > max_len:
+        truncated = True
+        input = input[:max_len]
+        
+    input = [surround(to_sur) for to_sur in input]
+        
+    joined = ", ".join(input[:-1] if not truncated else input)
+    after_and = f", and {input[-1] if not truncated else f"{original_len - len(input)} more"}"
+        
+    return joined + after_and

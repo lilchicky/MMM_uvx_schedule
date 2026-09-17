@@ -3,6 +3,7 @@ import datetime
 
 UTA_GTFS_STATIC_URL = "https://gtfsfeed.rideuta.com/GTFS_RT.zip"
 UTA_TRIP_UPDATE_URL = "https://apps.rideuta.com/tms/gtfs/TripUpdate"
+UTA_VEHICLES_URL = "https://apps.rideuta.com/tms/gtfs/Vehicle"
 
 LOGGING_LEVEL = logging.DEBUG
 WRITE_LOGS_TO_FILE = True
