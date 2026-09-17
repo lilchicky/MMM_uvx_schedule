@@ -4,6 +4,7 @@ import io
 import pandas as pd
 import datetime
 
+from google.transit import gtfs_realtime_pb2
 from typing import ClassVar
 from dataclasses import dataclass
 from uta_logger import UTALogger
@@ -12,11 +13,11 @@ from datetime import timezone, datetime
 from util import parse_service_time
 
 class GtfsLoadError(Exception):
-    '''Exception to be thrown if '''
+    '''Exception to be thrown if GTFSData fails to be created for whatever reason.'''
 
 @dataclass
 class GTFSData:
-    _LOGGER = UTALogger("static_gtfs", "static_gtfs").logger
+    _LOGGER = UTALogger("gtfs_data", "gtfs_data_handler").logger
     
     agency: pd.DataFrame
     stops: pd.DataFrame
@@ -81,6 +82,10 @@ class GTFSData:
             ["route_id", "route_long_name"]
         ]
         
+        if route_ids.empty:
+            self._LOGGER.warning(f"Found no trips that match [{route_name}].")
+            return None
+        
         self._LOGGER.info(f"Found {len(route_ids)} routes matching \"{route_name}\".")
 
         trips = self.trips.loc[
@@ -110,3 +115,59 @@ class GTFSData:
         complete_trips.departure_time = complete_trips.departure_time.map(lambda x: parse_service_time(x, today))
 
         return complete_trips.sort_values("departure_time").reset_index(drop = True)
+    
+    def get_current(self, static_gtfs: pd.DataFrame, trip_update_url: str, vehicles_url: str) -> pd.DataFrame:
+        
+        if static_gtfs.empty:
+            return static_gtfs
+    
+        def get_protobuf_data(url: str) -> gtfs_realtime_pb2.FeedEntity:
+            try:
+                pb = requests.get(url = url)
+                pb.raise_for_status()
+                
+            except requests.HTTPError as e:
+                raise(GtfsLoadError(f"Failed to retrieve protobuf data from [{url}]: Response {pb.status_code}"))
+
+            feed = gtfs_realtime_pb2.FeedMessage()
+            feed.ParseFromString(pb.content)
+
+            return feed
+
+        update_feed = get_protobuf_data(trip_update_url)
+        vehicle_feed = get_protobuf_data(vehicles_url)
+
+        update_data = []
+        vehicle_data = []
+
+        for entity in update_feed.entity:
+            if not entity.HasField("trip_update"):
+                continue
+            
+            for update in entity.trip_update.stop_time_update:
+                update_data.append({
+                    "trip_id": int(entity.trip_update.trip.trip_id), 
+                    "stop_sequence": int(update.stop_sequence), 
+                    "new_arrival_time": datetime.fromtimestamp(update.arrival.time, self.agency_tzinfo), 
+                    "new_departure_time": datetime.fromtimestamp(update.departure.time, self.agency_tzinfo)
+                })
+
+        for entity in vehicle_feed.entity:
+            if not entity.HasField("vehicle"):
+                continue
+
+            vehicle_data.append({"trip_id": entity.vehicle.trip.trip_id})
+
+        updated_trips = pd.DataFrame(update_data, columns = ["trip_id", "stop_sequence", "new_arrival_time", "new_departure_time"])
+        updated_vehicles = pd.DataFrame(vehicle_data, columns = ["trip_id"])
+
+        updated_trips = updated_trips[updated_trips.trip_id.isin(updated_vehicles.trip_id.unique())]
+
+        all_trips = pd.merge(
+            static_gtfs,
+            updated_trips,
+            on = ["trip_id", "stop_sequence"],
+            how = "left"
+        )
+
+        return all_trips

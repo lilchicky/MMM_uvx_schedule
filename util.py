@@ -36,15 +36,6 @@ def parse_service_time(stop_time: str, today: datetime) -> datetime:
     
     return adjusted_date + timedelta(days = h // 24)
 
-def get_protobuf_data(url: str) -> gtfs_realtime_pb2.FeedEntity:
-    pb = requests.get(url = url)
-    pb.raise_for_status()
-        
-    feed = gtfs_realtime_pb2.FeedMessage()
-    feed.ParseFromString(pb.content)
-    
-    return feed
-
 def get_next_departures(frame: pd.DataFrame, today: datetime, logger: logging.Logger, station: str|int = "", num_routes: int = 1) -> dict: 
     future_trips = frame[frame.departure_time > today]
     
@@ -90,45 +81,6 @@ def get_next_departures(frame: pd.DataFrame, today: datetime, logger: logging.Lo
         ])
             
     return times
-
-def merge_rt_trip_updates(to_merge: pd.DataFrame, tz: datetime.tzinfo) -> pd.DataFrame:
-    update_feed = get_protobuf_data(UTA_TRIP_UPDATE_URL)
-    vehicle_feed = get_protobuf_data(UTA_VEHICLES_URL)
-    
-    update_data = []
-    vehicle_data = []
-    
-    for entity in update_feed.entity:
-        if not entity.HasField("trip_update"):
-            continue
-        
-        for update in entity.trip_update.stop_time_update:
-            update_data.append({
-                "trip_id": int(entity.trip_update.trip.trip_id), 
-                "stop_sequence": int(update.stop_sequence), 
-                "new_arrival_time": datetime.fromtimestamp(update.arrival.time, tz), 
-                "new_departure_time": datetime.fromtimestamp(update.departure.time, tz)
-            })
-            
-    for entity in vehicle_feed.entity:
-        if not entity.HasField("vehicle"):
-            continue
-            
-        vehicle_data.append({"trip_id": entity.vehicle.trip.trip_id})
-    
-    updated_trips = pd.DataFrame(update_data, columns = ["trip_id", "stop_sequence", "new_arrival_time", "new_departure_time"])
-    updated_vehicles = pd.DataFrame(vehicle_data, columns = ["trip_id"])
-    
-    updated_trips = updated_trips[updated_trips.trip_id.isin(updated_vehicles.trip_id.unique())]
-    
-    all_trips = pd.merge(
-        to_merge,
-        updated_trips,
-        on = ["trip_id", "stop_sequence"],
-        how = "left"
-    )
-    
-    return all_trips
 
 def build_departure_string(departures: dict) -> str:
     
