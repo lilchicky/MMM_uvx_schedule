@@ -1,6 +1,4 @@
-import requests
 import datetime
-import pandas as pd
 
 from datetime import datetime, timezone
 from gtfs_data import GtfsLoadError, GTFSData

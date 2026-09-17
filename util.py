@@ -1,9 +1,7 @@
 import pandas as pd
-import requests
 import logging
 
 from datetime import timedelta, datetime
-from google.transit import gtfs_realtime_pb2
 from config import (
     UTA_TRIP_UPDATE_URL,
     UTA_VEHICLES_URL
