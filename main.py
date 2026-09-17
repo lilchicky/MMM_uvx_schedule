@@ -33,7 +33,11 @@ def main():
     frontrunner_trips = gd.get_trips_from_name("e")
     
     if frontrunner_trips is not None:
-        current_times = gd.get_current(frontrunner_trips, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
+        try:
+            current_times = gd.get_current(frontrunner_trips, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
+        except GtfsLoadError as e:
+            LOGGER.critical("Failed to retrieve current protobuf data.")
+            LOGGER.exception(e)
 
         #print(current_times[current_times.new_departure_time.notnull()])
         #print(current_times)

@@ -41,7 +41,7 @@ class GTFSData:
             _gtfs_static.raise_for_status()
             GTFSData._LOGGER.info(f"Successfully connected to {url}: Response {_gtfs_static.status_code}")
                     
-        except requests.exceptions.HTTPError as e:
+        except requests.exceptions.HTTPError:
             raise(GtfsLoadError(f"Failed to connect to {url}: Response {_gtfs_static.status_code}"))
         
         try:
@@ -126,7 +126,7 @@ class GTFSData:
                 pb = requests.get(url = url)
                 pb.raise_for_status()
                 
-            except requests.HTTPError as e:
+            except requests.HTTPError:
                 raise(GtfsLoadError(f"Failed to retrieve protobuf data from [{url}]: Response {pb.status_code}"))
 
             feed = gtfs_realtime_pb2.FeedMessage()
