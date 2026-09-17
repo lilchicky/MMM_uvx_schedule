@@ -32,15 +32,26 @@ def parse_service_time(stop_time: str, today: datetime) -> datetime:
     
     return adjusted_date + timedelta(days = h // 24)
 
-def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.Logger, station: str|int = None, num_routes: int = 1) -> dict: 
+def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.Logger, station: str|int = "", num_routes: int = 1) -> dict: 
     future_trips = frame[frame.departure_time > today]
     future_trips = future_trips.sort_values(["route_id", "departure_time"])
     
-    if station is not None and station:
-        station_restricted = future_trips[future_trips.stop_name.str.contains(station, case = False) if isinstance(station, str) else future_trips.stop_id == station]
+    if station:
+        station_restricted = (
+            future_trips[future_trips.stop_id == station] if isinstance(station, int)
+            else future_trips[future_trips.stop_name.str.contains(station, case = False)]
+        )
         
         if not station_restricted.empty:
             future_trips = station_restricted
+
+            future_trips.apply(
+                lambda x: (
+                    print(x.route_id)
+                ),
+                result_type = "broadcast",
+                axis = 1
+            )
             
             matched_stations = future_trips.stop_name.unique()
             ms_len = len(matched_stations)
@@ -55,9 +66,9 @@ def get_next_north_south(frame: pd.DataFrame, today: datetime, logger: logging.L
             logger.warning(f"No stops could be found that match {"stop ID" if isinstance(station, int) else "stop name"} [{station}], so all stations will be included.")
             
     grouped_trips = future_trips.groupby(["route_id", "direction_id"]).head(num_routes).reset_index(drop = True)
-    
+
     times = {}
-    
+
     for _, row in grouped_trips.iterrows():
         dir_str = (
             f"{row.route_long_name.title()}'s next departure {f"from {row.stop_name}"} towards {row.trip_headsign.removeprefix("To ").title()} "
