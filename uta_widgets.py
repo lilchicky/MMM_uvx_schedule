@@ -79,7 +79,6 @@ class SearchTripsWidget(QWidget):
         
         self.static = self.gd.get_trips_from_name("")
         self.all_routes = [format_name(route) for route in self.static["route_long_name"].unique()]
-        self.all_stations = [format_name(station) for station in self.static["stop_name"].unique()]
         
     def populate_stations(self, route: str):
         static = self.static[self.static.route_long_name.str.contains(route, case = False, regex = False)]
@@ -95,6 +94,7 @@ class SearchTripsWidget(QWidget):
             self.logger.exception(e)
             
         current_stops = current_times["stop_name"].unique()
+        current_stops = [format_name(entry) for entry in current_stops]
         self.station_view.clear()
         self.station_view.addItems(current_stops)
         self.station_view.sortItems(Qt.SortOrder.AscendingOrder)
