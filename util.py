@@ -35,21 +35,19 @@ def get_next_departures(frame: pd.DataFrame, today: datetime, logger: logging.Lo
     future_trips = frame[frame.departure_time > today]
     
     if station:
-        station_restricted = (
-            future_trips[future_trips.stop_id == station] if isinstance(station, int)
-            else future_trips[future_trips.stop_name.str.contains(station, case = False)]
-        )
+        station_restricted = get_stations(future_trips, station, logger)
         
         if not station_restricted.empty:
             future_trips = station_restricted
-            
             matched_stations = future_trips.stop_name.unique()
             logger.info(f"{"Stop ID" if isinstance(station, int) else "Stop name"} [{station}] was found and resolved to {format_readable_list(matched_stations, max_len = 5, isolate_char = "\"")}.")
+        
         else:
             logger.warning(f"No stops could be found that match {"stop ID" if isinstance(station, int) else "stop name"} [{station}], so all stations will be included.")
             
-    future_trips = future_trips.sort_values(["route_id", "direction_id", "departure_time"])
-    grouped_trips = future_trips.groupby(["route_id", "direction_id"]).head(num_routes).reset_index(drop = True)
+    future_trips = future_trips.sort_values(["route_id", "stop_id", "direction_id", "departure_time"])
+    grouped_trips = future_trips.groupby(["route_id", "stop_id", "direction_id"]).head(num_routes).reset_index(drop = True)
+    print(grouped_trips)
 
     times = {}
 
@@ -76,6 +74,12 @@ def get_next_departures(frame: pd.DataFrame, today: datetime, logger: logging.Lo
         ])
             
     return times
+    
+def get_stations(search_frame: pd.DataFrame, station: str|int, logger: logging.Logger) -> pd.DataFrame:
+    return (
+        search_frame[search_frame.stop_id == station] if isinstance(station, int)
+        else search_frame[search_frame.stop_name.str.contains(station, case = False)]
+    )
 
 def build_departure_string(departures: dict) -> str:
     
