@@ -24,6 +24,7 @@ class GTFSData:
     routes: pd.DataFrame
     trips: pd.DataFrame
     stop_times: pd.DataFrame
+    
     agency_tzinfo: datetime.tzinfo
     
     REQUIRED_FILES: ClassVar[tuple[str]] = (
@@ -129,6 +130,7 @@ class GTFSData:
             except requests.HTTPError:
                 raise(GtfsLoadError(f"Failed to retrieve protobuf data from [{url}]: Response {pb.status_code}"))
 
+            GTFSData._LOGGER.info(f"Successfully connected to {url}: Response {pb.status_code}")
             feed = gtfs_realtime_pb2.FeedMessage()
             feed.ParseFromString(pb.content)
 

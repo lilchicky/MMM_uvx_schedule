@@ -2,10 +2,6 @@ import pandas as pd
 import logging
 
 from datetime import timedelta, datetime
-from config import (
-    UTA_TRIP_UPDATE_URL,
-    UTA_VEHICLES_URL
-)
 
 def parse_service_time(stop_time: str, today: datetime) -> datetime:
     '''

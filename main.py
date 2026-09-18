@@ -12,25 +12,27 @@ from util import (
     get_next_departures,
     build_departure_string
 )
+from mapper import (
+    test_place
+)
 
 LOGGER = UTALogger("main", "main").logger
 
 def main():
+    test_place("Vineyard, UT, USA")
     try:
         gd = GTFSData.from_url(UTA_GTFS_STATIC_URL)
-        
     except GtfsLoadError as e:
         LOGGER.critical("GTFS Data object failed to load.")
         LOGGER.exception(e)
         return
-    
     except Exception as e:
         LOGGER.critical("An error has occurred during loading.")
         LOGGER.exception(e)
         return
     
     today = datetime.now(timezone.utc).astimezone(gd.agency_tzinfo)
-    frontrunner_trips = gd.get_trips_from_name("e")
+    frontrunner_trips = gd.get_trips_from_name("frontrunner")
     
     if frontrunner_trips is not None:
         try:
@@ -46,7 +48,7 @@ def main():
         dirs = get_next_departures(
             current_times, today, 
             LOGGER, 
-            station = "e", 
+            station = "vineyard", 
             num_routes = 3
         )
 

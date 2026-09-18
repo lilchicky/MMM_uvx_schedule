@@ -2,3 +2,7 @@ requests
 pandas
 gtfs-realtime-bindings
 logging
+osmnx
+matplotlib
+contextily
+dotenv

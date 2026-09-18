@@ -4,29 +4,118 @@
 #
 #    pip-compile --no-index
 #
+affine==3.0.1
+    # via rasterio
+attrs==26.1.0
+    # via
+    #   affine
+    #   rasterio
 certifi==2026.7.22
-    # via requests
+    # via
+    #   pyogrio
+    #   pyproj
+    #   rasterio
+    #   requests
 charset-normalizer==3.5.1
     # via requests
+click==8.5.0
+    # via
+    #   mercantile
+    #   rasterio
+cloudpickle==3.1.2
+    # via joblib
+contextily==1.7.1
+    # via -r requirements.in
+contourpy==1.4.0
+    # via matplotlib
+cycler==0.12.1
+    # via matplotlib
+dotenv==0.9.9
+    # via -r requirements.in
+fonttools==4.65.0
+    # via matplotlib
+geographiclib==2.1
+    # via geopy
+geopandas==1.1.4
+    # via osmnx
+geopy==2.5.0
+    # via contextily
 gtfs-realtime-bindings==2.2.0
     # via -r requirements.in
 idna==3.19
     # via requests
+joblib==1.6.0
+    # via contextily
+kiwisolver==1.5.1
+    # via matplotlib
 logging==0.4.9.6
     # via -r requirements.in
+matplotlib==3.11.2
+    # via
+    #   -r requirements.in
+    #   contextily
+mercantile==1.2.1
+    # via contextily
+networkx==3.6.1
+    # via osmnx
 numpy==2.5.3
-    # via pandas
-pandas==3.0.5
+    # via
+    #   contourpy
+    #   geopandas
+    #   matplotlib
+    #   osmnx
+    #   pandas
+    #   pyogrio
+    #   rasterio
+    #   shapely
+osmnx==2.1.1
     # via -r requirements.in
+packaging==26.3
+    # via
+    #   geopandas
+    #   matplotlib
+    #   pyogrio
+pandas==3.0.5
+    # via
+    #   -r requirements.in
+    #   geopandas
+    #   osmnx
+pillow==12.3.0
+    # via
+    #   contextily
+    #   matplotlib
 protobuf==7.36.1
     # via gtfs-realtime-bindings
+pyogrio==0.13.0
+    # via geopandas
+pyparsing==3.3.2
+    # via
+    #   matplotlib
+    #   rasterio
+pyproj==3.8.0
+    # via geopandas
 python-dateutil==2.9.0.post0
-    # via pandas
+    # via
+    #   matplotlib
+    #   pandas
+python-dotenv==1.2.3
+    # via dotenv
+rasterio==1.5.1
+    # via contextily
 requests==2.34.2
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   contextily
+    #   osmnx
+shapely==2.1.2
+    # via
+    #   geopandas
+    #   osmnx
 six==1.17.0
     # via python-dateutil
 tzdata==2026.4
     # via pandas
 urllib3==2.8.0
     # via requests
+xyzservices==2026.9.1
+    # via contextily
