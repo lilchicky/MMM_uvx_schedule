@@ -12,14 +12,10 @@ from util import (
     get_next_departures,
     build_departure_string
 )
-from ui import (
-    test_place
-)
 
 LOGGER = UTALogger("main", "main").logger
 
 def main():
-    test_place("Vineyard, UT, USA")
     try:
         gd = GTFSData.from_url(UTA_GTFS_STATIC_URL)
     except GtfsLoadError as e:
@@ -32,7 +28,7 @@ def main():
         return
     
     today = datetime.now(timezone.utc).astimezone(gd.agency_tzinfo)
-    frontrunner_trips = gd.get_trips_from_name("frontrunner")
+    frontrunner_trips = gd.get_trips_from_name("uvx")
     
     if frontrunner_trips is not None:
         try:
@@ -48,7 +44,7 @@ def main():
         dirs = get_next_departures(
             current_times, today, 
             LOGGER, 
-            station = "vineyard", 
+            station = "stadium", 
             num_routes = 3
         )
 

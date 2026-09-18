@@ -3,6 +3,7 @@ import sys
 import osmnx as ox
 import matplotlib.pyplot as plt
 import contextily as cx
+import pandas as pd
 
 from datetime import datetime, timezone
 from dotenv import load_dotenv
@@ -12,9 +13,13 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QPushButton,
     QGridLayout,
-    QLabel
+    QLabel,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLineEdit,
+    QCompleter
 )
-from PyQt6.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal, Qt, QStringListModel
 from geopy.geocoders import Nominatim
 
 from gtfs_data import GTFSData, GtfsLoadError
@@ -26,7 +31,7 @@ from config import (
 )
 from util import (
     get_next_departures,
-    build_departure_string
+    format_name
 )
 
 '''
@@ -59,6 +64,8 @@ class UTAMapUI(QMainWindow):
         
         self.count = 0
         self.gd = GTFSData.from_url(UTA_GTFS_STATIC_URL)
+        self.search_routes = self.gd.routes["route_long_name"].apply(lambda x: format_name(x)).unique()
+        self.search_stops = self.gd.stops["stop_name"].apply(lambda x: format_name(x)).unique()
         
         self.init_ui()
         
@@ -66,24 +73,50 @@ class UTAMapUI(QMainWindow):
         self.setWindowTitle("UTA Transit Map")
         self.setGeometry(100, 100, 1200, 800)
         
-        self.main_win = QWidget()
+        self.main_pane = QWidget()
         
+        self.search_pane = QWidget()
+        self.search_pane.setFixedHeight(40)
+        
+        self.info_pane = QWidget()
+        
+        self.info_pane.setLayout(self.build_info_pane())
+        self.search_pane.setLayout(self.build_search_bar())
+        
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.search_pane)
+        main_layout.addWidget(self.info_pane)
+        
+        self.main_pane.setLayout(main_layout)
+        
+        self.setCentralWidget(self.main_pane)
+        
+    def build_search_bar(self):
+        self.search_bar = QLineEdit()
+        completer = QCompleter(self.search_stops, self)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.search_bar.setCompleter(completer)
+        
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(self.search_bar)
+        
+        return search_layout
+    
+    def build_info_pane(self):
         self.refresh = QPushButton("Refresh Static Data")
-        self.refresh.clicked.connect(lambda: self.start_input_thread_work(self.refresh, self.gd.refresh_static_data))
+        self.refresh.clicked.connect(lambda: self.start_input_thread_work(self.refresh, self.refresh_static_data))
         
         self.button = QPushButton("test")
-        self.button.clicked.connect(self.push)
+        self.button.clicked.connect(lambda: self.start_input_thread_work(self.button, self.push))
         
         self.label = QLabel("Nothing Yet")
         
-        main_layout = QGridLayout()
-        main_layout.addWidget(self.button, 0, 1)
-        main_layout.addWidget(self.label, 1, 0)
-        main_layout.addWidget(self.refresh, 0, 2)
+        info_layout = QGridLayout()
+        info_layout.addWidget(self.button, 0, 1)
+        info_layout.addWidget(self.label, 1, 0)
+        info_layout.addWidget(self.refresh, 0, 2)
         
-        self.main_win.setLayout(main_layout)
-        
-        self.setCentralWidget(self.main_win)
+        return info_layout
         
     def start_input_thread_work(self, button: QPushButton, func: function, *args: any) -> None:
         thread = WorkerThread(func, *args, parent = self)
@@ -91,6 +124,11 @@ class UTAMapUI(QMainWindow):
         thread.finished.connect(thread.deleteLater)
         thread.start()
         button.setEnabled(False)
+        
+    def refresh_static_data(self):
+        self.gd.refresh_static_data()
+        self.search_routes = self.gd.routes["route_long_name"].apply(lambda x: format_name(x)).unique()
+        self.search_stops = self.gd.stops["stop_name"].apply(lambda x: format_name(x)).unique()
         
     def push(self):
         self.count += 1
@@ -116,6 +154,9 @@ class UTAMapUI(QMainWindow):
             for _, departures in dirs.items():
                 self.label.setText(departures.get("route_name"))
                 break
+            
+    def search(self, search_list):
+        pass
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

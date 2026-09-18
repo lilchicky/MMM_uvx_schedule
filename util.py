@@ -1,5 +1,6 @@
 import pandas as pd
 import logging
+import re
 
 from datetime import timedelta, datetime
 
@@ -128,3 +129,14 @@ def format_readable_list(input: list, max_len: int = 0, isolate_char: str = "") 
     after_and = f", and {input[-1] if not truncated else f"{original_len - len(input)} more"}"
         
     return joined + after_and
+    
+def format_name(name: str) -> str:
+    match = re.search(r"\(([A-Z0-9]+)\)\s*$", name)
+    
+    if match:
+        a = match.group(0)
+        text = name[:match.start()].strip()
+        
+        return f"{text.title() if text.isupper() else text} {a}"
+        
+    return name.title() if name.isupper() else name
