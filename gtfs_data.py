@@ -26,6 +26,7 @@ class GTFSData:
     stop_times: pd.DataFrame
     
     agency_tzinfo: datetime.tzinfo
+    gtfs_static_url: str
     
     REQUIRED_FILES: ClassVar[tuple[str]] = (
         "agency.txt",
@@ -66,7 +67,8 @@ class GTFSData:
             routes = routes,
             trips = trips,
             stop_times = stop_times,
-            agency_tzinfo = agency_tzinfo
+            agency_tzinfo = agency_tzinfo,
+            gtfs_static_url = url
         )
         
     @classmethod
@@ -76,6 +78,30 @@ class GTFSData:
         if missing_files:
             missing = ", ".join(sorted(missing_files))
             raise(GtfsLoadError(f"GTFS feed zip file from is missing required {"file" if len(missing_files) == 1 else "files"}: {missing}"))
+        
+    def refresh_static_data(self):
+        try:
+            _gtfs_static = requests.get(url = self.gtfs_static_url)
+            _gtfs_static.raise_for_status()
+            GTFSData._LOGGER.info(f"Successfully connected to {self.gtfs_static_url}: Response {_gtfs_static.status_code}")
+                    
+        except requests.exceptions.HTTPError:
+            raise(GtfsLoadError(f"Failed to connect to {self.gtfs_static_url}: Response {_gtfs_static.status_code}"))
+        
+        try:
+            with zipfile.ZipFile(io.BytesIO(_gtfs_static.content)) as zip:
+                self._do_files_exist(zip)
+                
+                self.agency = pd.read_csv(zip.open("agency.txt"))
+                self.stops = pd.read_csv(zip.open("stops.txt"))
+                self.routes = pd.read_csv(zip.open("routes.txt"))
+                self.trips = pd.read_csv(zip.open("trips.txt"))
+                self.stop_times = pd.read_csv(zip.open("stop_times.txt"))
+                
+                self.agency_tzinfo = ZoneInfo(self.agency["agency_timezone"].item())
+            
+        except zipfile.BadZipFile:
+            raise(GtfsLoadError(f"Object [{GTFSData.__name__}] failed to initialize: Data from [{self.url}] is not a zip file."))
         
     def get_trips_from_name(self, route_name: str) -> pd.DataFrame:
         route_ids = self.routes.loc[
