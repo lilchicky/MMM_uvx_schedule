@@ -5,6 +5,11 @@ import contextily as cx
 
 from dotenv import load_dotenv
 
+'''
+OSMnx paper citation:
+Boeing, G. (2025). Modeling and Analyzing Urban Networks and Amenities with OSMnx. Geographical Analysis 57 (4), 567-577. doi:10.1111/gean.70009
+'''
+
 load_dotenv()
 
 CARTO_KEY = os.getenv("CARTO_KEY")
