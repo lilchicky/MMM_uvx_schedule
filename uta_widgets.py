@@ -2,7 +2,7 @@ import pandas as pd
 import logging
 
 from gtfs_data import GTFSData, GtfsLoadError
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QMimeData
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -47,8 +47,11 @@ class SearchTripsWidget(QWidget):
         self.gd = gd
         self.logger = logger
         
-        self.reload_static_data()
+        self.last_route_search = ""
+        self.last_station_search = ""
+        
         self.init_ui()
+        self.refresh()
         
     def init_ui(self):
         self.setMaximumWidth(300)
@@ -57,12 +60,15 @@ class SearchTripsWidget(QWidget):
         self.station_search = QLineEdit()
         self.route_search = QLineEdit()
         
+        self.route_search.setPlaceholderText("Search a route...")
+        
         self.station_view = QListWidget()
         self.route_view = QListWidget()
         
-        self.route_view.addItems(self.all_routes)
-        self.route_view.sortItems(Qt.SortOrder.AscendingOrder)
-        self.route_view.currentTextChanged.connect(lambda: self.pause_widget(self.populate_stations, self.route_view.currentItem().text()))
+        self.route_view.itemClicked.connect(lambda: self.pause_widget(self.populate_stations, self.route_view.currentItem().text()))
+        
+        self.route_search.textChanged.connect(lambda x: self.update_list(self.route_view, self.all_routes, x, self.last_route_search))
+        self.station_search.textChanged.connect(lambda x: self.update_list(self.station_view, self.current_stops, x, self.last_station_search))
         
         self.station_view.addItem("Select a route!")
         
@@ -74,11 +80,17 @@ class SearchTripsWidget(QWidget):
         
         self.setLayout(main_layout)
         
-    def reload_static_data(self):
+    def refresh(self):
         self.gd.refresh_static_data()
         
         self.static = self.gd.get_trips_from_name("")
         self.all_routes = [format_name(route) for route in self.static["route_long_name"].unique()]
+        self.current_stops = []
+        
+        self.route_view.clear()
+        self.update_list(self.route_view, self.all_routes, self.route_search.text(), self.last_route_search)
+        
+        self.station_view.clear()
         
     def populate_stations(self, route: str):
         static = self.static[self.static.route_long_name.str.contains(route, case = False, regex = False)]
@@ -93,10 +105,11 @@ class SearchTripsWidget(QWidget):
             self.logger.critical("Failed to retrieve current protobuf data.")
             self.logger.exception(e)
             
-        current_stops = current_times["stop_name"].unique()
-        current_stops = [format_name(entry) for entry in current_stops]
+        self.current_stops = current_times["stop_name"].unique()
+        self.current_stops = [format_name(entry) for entry in self.current_stops]
+        
         self.station_view.clear()
-        self.station_view.addItems(current_stops)
+        self.station_view.addItems(self.current_stops)
         self.station_view.sortItems(Qt.SortOrder.AscendingOrder)
         
     def pause_widget(self, func: function, *args: any) -> None:
@@ -105,5 +118,19 @@ class SearchTripsWidget(QWidget):
         thread.finished.connect(thread.deleteLater)
         thread.start()
         self.setEnabled(False)
+        
+    def update_list(self, current_widget: QListWidget, source_list: list, current_search: str, last_search: str):
+        current_widget.clear()
+        
+        if not current_search:
+            current_widget.addItems(source_list)
+            return
+                
+        current_results = [current_widget.item(x).text() for x in range(current_widget.count())] if not current_search.startswith(last_search) else source_list
+        last_search = current_search
+        
+        new_results = [result for result in current_results if current_search.lower() in result.lower()]
+            
+        current_widget.addItems(new_results)
             
         

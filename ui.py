@@ -117,7 +117,7 @@ class UTAMapUI(QMainWindow):
         self.test_search = SearchTripsWidget(self.gd, UTAMapUI.LOGGER)
         
         self.refresh = QPushButton("Refresh Static Data")
-        self.refresh.clicked.connect(lambda: self.start_input_thread_work(self.refresh, self.test_search.reload_static_data))
+        self.refresh.clicked.connect(lambda: self.start_input_thread_work(self.refresh, self.test_search.refresh))
         
         self.button = QPushButton("test")
         self.button.clicked.connect(lambda: self.start_input_thread_work(self.button, self.push))
