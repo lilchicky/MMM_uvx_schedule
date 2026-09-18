@@ -114,14 +114,13 @@ class UTAMapUI(QMainWindow):
     
     def build_info_pane(self):
         self.route_data = StationInfoWidget()
+        self.test_search = SearchTripsWidget(self.gd, UTAMapUI.LOGGER)
         
         self.refresh = QPushButton("Refresh Static Data")
-        self.refresh.clicked.connect(lambda: self.start_input_thread_work(self.refresh, self.refresh_static_data))
+        self.refresh.clicked.connect(lambda: self.start_input_thread_work(self.refresh, self.test_search.reload_static_data))
         
         self.button = QPushButton("test")
         self.button.clicked.connect(lambda: self.start_input_thread_work(self.button, self.push))
-        
-        self.test_search = SearchTripsWidget(self.gd, UTAMapUI.LOGGER)
         
         info_layout = QGridLayout()
         info_layout.addWidget(self.button, 0, 1)

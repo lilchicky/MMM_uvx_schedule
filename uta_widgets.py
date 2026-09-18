@@ -45,13 +45,9 @@ class SearchTripsWidget(QWidget):
     def __init__(self, gd: GTFSData, logger: logging.Logger):
         super().__init__()
         self.gd = gd
-        
-        self.static = gd.get_trips_from_name("")
         self.logger = logger
         
-        self.all_routes = [format_name(route) for route in self.static["route_long_name"].unique()]
-        self.all_stations = [format_name(station) for station in self.static["stop_name"].unique()]
-        
+        self.reload_static_data()
         self.init_ui()
         
     def init_ui(self):
@@ -78,8 +74,15 @@ class SearchTripsWidget(QWidget):
         
         self.setLayout(main_layout)
         
+    def reload_static_data(self):
+        self.gd.refresh_static_data()
+        
+        self.static = self.gd.get_trips_from_name("")
+        self.all_routes = [format_name(route) for route in self.static["route_long_name"].unique()]
+        self.all_stations = [format_name(station) for station in self.static["stop_name"].unique()]
+        
     def populate_stations(self, route: str):
-        static = self.gd.get_trips_from_name(route)
+        static = self.static[self.static.route_long_name.str.contains(route, case = False, regex = False)]
         
         self.station_view.clear()
         self.station_view.addItem("Finding stops...")
@@ -93,7 +96,7 @@ class SearchTripsWidget(QWidget):
             
         current_stops = current_times["stop_name"].unique()
         self.station_view.clear()
-        self.station_view.addItems([station for station in self.all_stations if station in current_stops])
+        self.station_view.addItems(current_stops)
         self.station_view.sortItems(Qt.SortOrder.AscendingOrder)
         
     def pause_widget(self, func: function, *args: any) -> None:
