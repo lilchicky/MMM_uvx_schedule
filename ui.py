@@ -95,7 +95,10 @@ class UTAMapUI(QMainWindow):
         self.search_bar = QLineEdit()
         completer = QCompleter(self.search_stops, self)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
         self.search_bar.setCompleter(completer)
+
+        self.search_bar.returnPressed.connect(self.push)
         
         search_layout = QHBoxLayout()
         search_layout.addWidget(self.search_bar)
@@ -109,11 +112,11 @@ class UTAMapUI(QMainWindow):
         self.button = QPushButton("test")
         self.button.clicked.connect(lambda: self.start_input_thread_work(self.button, self.push))
         
-        self.label = QLabel("Nothing Yet")
+        self.route_data = StationInfoWidget({})
         
         info_layout = QGridLayout()
         info_layout.addWidget(self.button, 0, 1)
-        info_layout.addWidget(self.label, 1, 0)
+        info_layout.addWidget(self.route_data, 1, 0)
         info_layout.addWidget(self.refresh, 0, 2)
         
         return info_layout
@@ -152,7 +155,7 @@ class UTAMapUI(QMainWindow):
             )
     
             for _, departures in dirs.items():
-                self.label.setText(departures.get("route_name"))
+                self.route_data.update_label(departures)
                 break
             
     def search(self, search_list):
@@ -184,3 +187,18 @@ def test_place(place: str):
     
     ax.set_axis_off()
     plt.show()
+
+class StationInfoWidget(QWidget):
+
+    def __init__(self, station_data: dict):
+        super().__init__()
+
+        self.update_label(station_data)
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.route_name)
+
+        self.setLayout(main_layout)
+
+    def update_label(self, new_data: dict):
+        self.route_name = QLabel(f"Route: {new_data.get("route_name")}")
