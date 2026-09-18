@@ -12,7 +12,7 @@ from util import (
     get_next_departures,
     build_departure_string
 )
-from mapper import (
+from ui import (
     test_place
 )
 
