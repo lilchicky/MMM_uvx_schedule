@@ -120,7 +120,7 @@ def format_readable_list(input: list, max_len: int = 0, isolate_char: str = "") 
         return surround(input[0])
     
     if original_len == 2:
-        return f"{surround(input[0])} and {surround[input[1]]}"
+        return f"{surround(input[0])} and {surround(input[1])}"
     
     if max_len > 0 and original_len > max_len:
         truncated = True
