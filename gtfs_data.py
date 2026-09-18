@@ -104,10 +104,14 @@ class GTFSData:
             raise(GtfsLoadError(f"Object [{GTFSData.__name__}] failed to initialize: Data from [{self.url}] is not a zip file."))
         
     def get_trips_from_name(self, route_name: str) -> pd.DataFrame:
-        route_ids = self.routes.loc[
-            self.routes.route_long_name.str.contains(route_name, case = False),
-            ["route_id", "route_long_name"]
-        ]
+        if route_name:
+            route_ids = self.routes.loc[
+                self.routes.route_long_name.str.contains(route_name, case = False, regex = False),
+                ["route_id", "route_long_name"]
+            ]
+            
+        else:
+            route_ids = self.routes[["route_id", "route_long_name"]]
         
         if route_ids.empty:
             self._LOGGER.warning(f"Found no trips that match [{route_name}].")

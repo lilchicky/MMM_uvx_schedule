@@ -19,10 +19,11 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QCompleter
 )
-from PyQt6.QtCore import QThread, pyqtSignal, Qt, QStringListModel
+from PyQt6.QtCore import Qt
 from geopy.geocoders import Nominatim
 
 from gtfs_data import GTFSData, GtfsLoadError
+from uta_widgets import StationInfoWidget, SearchTripsWidget
 from uta_logger import UTALogger
 from config import (
     UTA_GTFS_STATIC_URL,
@@ -31,7 +32,8 @@ from config import (
 )
 from util import (
     get_next_departures,
-    format_name
+    format_name,
+    WorkerThread
 )
 
 '''
@@ -41,18 +43,6 @@ Boeing, G. (2025). Modeling and Analyzing Urban Networks and Amenities with OSMn
 
 load_dotenv()
 CARTO_KEY = os.getenv("CARTO_KEY")
-
-class WorkerThread(QThread):
-    result_ready = pyqtSignal(str)
-    
-    def __init__(self, func, *args, parent = None):
-        super().__init__(parent)
-        self.func = func
-        self.args = args
-    
-    def run(self):
-        result = self.func(*self.args)
-        self.result_ready.emit(result)
 
 class UTAMapUI(QMainWindow):
     
@@ -64,6 +54,7 @@ class UTAMapUI(QMainWindow):
         
         self.count = 0
         self.gd = GTFSData.from_url(UTA_GTFS_STATIC_URL)
+        
         self.search_routes = self.gd.routes["route_long_name"].apply(lambda x: format_name(x)).unique()
         self.search_stops = self.gd.stops["stop_name"].apply(lambda x: format_name(x)).unique()
         
@@ -80,8 +71,8 @@ class UTAMapUI(QMainWindow):
         
         self.info_pane = QWidget()
         
-        self.info_pane.setLayout(self.build_info_pane())
         self.search_pane.setLayout(self.build_search_bar())
+        self.info_pane.setLayout(self.build_info_pane())
         
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.search_pane)
@@ -92,32 +83,51 @@ class UTAMapUI(QMainWindow):
         self.setCentralWidget(self.main_pane)
         
     def build_search_bar(self):
-        self.search_bar = QLineEdit()
-        completer = QCompleter(self.search_stops, self)
-        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-        completer.setFilterMode(Qt.MatchFlag.MatchContains)
-        self.search_bar.setCompleter(completer)
+        
+        def get_completer(database: list):
+            completer = QCompleter(database, self)
+            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+            completer.setFilterMode(Qt.MatchFlag.MatchContains)
+            return completer
+            
+        self.route_search = QLineEdit()
+        self.station_search = QLineEdit()
+        
+        self.submit_search = QPushButton("Search")
+        self.submit_search.setMaximumSize(100, 25)
+        self.submit_search.setMinimumSize(80, 25)
+        
+        self.route_search.setCompleter(get_completer(self.search_routes))
+        self.station_search.setCompleter(get_completer(self.search_stops))
 
-        self.search_bar.returnPressed.connect(self.push)
+        # Interaction connections
+        self.route_search.returnPressed.connect(lambda: self.push(self.route_search.text()))
+        self.station_search.returnPressed.connect(lambda: self.push(self.station_search.text()))
+        self.submit_search.clicked.connect(lambda: self.search(self.route_search.text(), self.station_search.text()))
         
         search_layout = QHBoxLayout()
-        search_layout.addWidget(self.search_bar)
+        search_layout.addWidget(self.route_search)
+        search_layout.addWidget(self.station_search)
+        search_layout.addWidget(self.submit_search)
         
         return search_layout
     
     def build_info_pane(self):
+        self.route_data = StationInfoWidget()
+        
         self.refresh = QPushButton("Refresh Static Data")
         self.refresh.clicked.connect(lambda: self.start_input_thread_work(self.refresh, self.refresh_static_data))
         
         self.button = QPushButton("test")
         self.button.clicked.connect(lambda: self.start_input_thread_work(self.button, self.push))
         
-        self.route_data = StationInfoWidget({})
+        self.test_search = SearchTripsWidget(self.gd, UTAMapUI.LOGGER)
         
         info_layout = QGridLayout()
         info_layout.addWidget(self.button, 0, 1)
         info_layout.addWidget(self.route_data, 1, 0)
         info_layout.addWidget(self.refresh, 0, 2)
+        info_layout.addWidget(self.test_search, 1, 1)
         
         return info_layout
         
@@ -136,30 +146,29 @@ class UTAMapUI(QMainWindow):
     def push(self):
         self.count += 1
         self.button.setText(f"{self.count}")
-        
-        today = datetime.now(timezone.utc).astimezone(self.gd.agency_tzinfo)
-        search = self.gd.get_trips_from_name("frontrunner")
-        
+            
+    def search(self, route, station):
+        search = self.gd.get_trips_from_name(route)
+                
         if search is not None:
+            today = datetime.now(timezone.utc).astimezone(self.gd.agency_tzinfo)
+            
             try:
                 current_times = self.gd.get_current(search, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
             except GtfsLoadError as e:
                 UTAMapUI.LOGGER.critical("Failed to retrieve current protobuf data.")
-                UTAMapUI.exception(e)
+                UTAMapUI.LOGGER.exception(e)
     
             dirs = get_next_departures(
                 current_times, today, 
                 UTAMapUI.LOGGER, 
-                station = "vineyard", 
+                station = station, 
                 num_routes = 3
             )
     
             for _, departures in dirs.items():
                 self.route_data.update_label(departures)
                 break
-            
-    def search(self, search_list):
-        pass
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
@@ -187,18 +196,3 @@ def test_place(place: str):
     
     ax.set_axis_off()
     plt.show()
-
-class StationInfoWidget(QWidget):
-
-    def __init__(self, station_data: dict):
-        super().__init__()
-
-        self.update_label(station_data)
-
-        main_layout = QVBoxLayout()
-        main_layout.addWidget(self.route_name)
-
-        self.setLayout(main_layout)
-
-    def update_label(self, new_data: dict):
-        self.route_name = QLabel(f"Route: {new_data.get("route_name")}")

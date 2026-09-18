@@ -2,6 +2,7 @@ import pandas as pd
 import logging
 import re
 
+from PyQt6.QtCore import QThread, pyqtSignal
 from datetime import timedelta, datetime
 
 def parse_service_time(stop_time: str, today: datetime) -> datetime:
@@ -144,3 +145,15 @@ def format_name(name: str) -> str:
         return f"{text.title() if text.isupper() else text} {a}"
         
     return name.title() if name.isupper() else name
+    
+class WorkerThread(QThread):
+    result_ready = pyqtSignal(str)
+    
+    def __init__(self, func, *args, parent = None):
+        super().__init__(parent)
+        self.func = func
+        self.args = args
+    
+    def run(self):
+        result = self.func(*self.args)
+        self.result_ready.emit(result)
