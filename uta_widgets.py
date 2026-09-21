@@ -128,9 +128,70 @@ class SearchTripsWidget(QWidget):
                 
         current_results = [current_widget.item(x).text() for x in range(current_widget.count())] if not current_search.startswith(last_search) else source_list
         last_search = current_search
+
+        new_results = []
+
+        for result in current_results:
+            if current_search not in result:
+                continue
+
+            score = self.search(current_search, result)
+
+            if score > 0:
+                new_results.append({
+                    "val": result,
+                    "score": score
+                })
+
+        new_results = new_results.sort()
         
         new_results = [result for result in current_results if current_search.lower() in result.lower()]
             
         current_widget.addItems(new_results)
-            
+
+    def search(needle: str, haystack: str):
+        score = 0
+        search_pos = 0
+        last_match = 0
+
+        needle_len = len(needle)
+        haystack_len = len(haystack)
+
+        if(needle == haystack):
+            return 1000
+
+        if(needle_len > haystack_len):
+            return 0
+
+        for i, char in enumerate(haystack):
+            if search_pos > needle_len:
+                break
+
+            if haystack[:i] == needle[:search_pos]:
+                if last_match:
+                    score -= (i - last_match - 1) * 2
+                    score = max(score, 1)
+
+                if last_match and i == last_match + 1:
+                    score += 10
+                else:
+                    score += 1
+
+                if i == 0:
+                    score += 20
+                elif i <= 3:
+                    score += 5
+
+                last_match = i
+                search_pos += 1
+
+        if search_pos < needle_len:
+            return 0
+
+        if haystack[:search_pos] == needle:
+            score += 100
+
+        return score
+
+
         
