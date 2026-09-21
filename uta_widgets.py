@@ -136,18 +136,17 @@ class SearchTripsWidget(QWidget):
         for result in current_results:
             check_result = result.lower()
             if not all(char in check_result for char in search_chars):
-                print(f"All characters from {search_chars} are not in {result}")
                 continue
 
             score = self.search(check_search, check_result)
-            print(f"Search: {check_search}, Result: {check_result}, Score: {score}")
 
-            new_results.append({
-                "val": result,
-                "score": score
-            })
+            if score > 0:
+                new_results.append({
+                    "val": result,
+                    "score": score
+                })
 
-        new_results.sort(key = lambda x: x["score"])
+        new_results.sort(key = lambda x: x["score"], reverse = True)
         
         new_results = [entry["val"] for entry in new_results]
             
@@ -161,16 +160,17 @@ class SearchTripsWidget(QWidget):
         needle_len = len(needle)
         haystack_len = len(haystack)
 
-        if(needle == haystack):
+        if needle == haystack:
             return 1000
+        
+        if needle_len > haystack_len:
+            return 0
 
         for i in range(haystack_len):
-            print(score)
             if search_pos >= needle_len:
                 break
             
-            print(f"Checking if {needle[search_pos]} is in {haystack[i:]}")
-            if needle[search_pos] in haystack[i:]:
+            if needle[search_pos] == haystack[i]:
                 
                 if last_match:
                     score -= (i - last_match - 1) * 2
@@ -189,8 +189,11 @@ class SearchTripsWidget(QWidget):
                 last_match = i
                 search_pos += 1
 
-        if haystack[search_pos:] == needle:
+        if haystack[:search_pos] == needle:
             score += 100
+            
+        if search_pos < needle_len:
+            return 0
 
         return score
 
