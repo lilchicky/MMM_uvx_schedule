@@ -67,10 +67,12 @@ class SearchTripsWidget(QWidget):
         
         self.route_view.itemClicked.connect(lambda: self.pause_widget(self.populate_stations, self.route_view.currentItem().text()))
         
-        self.route_search.textChanged.connect(lambda x: self.update_list(self.route_view, self.all_routes, x, self.last_route_search))
-        self.station_search.textChanged.connect(lambda x: self.update_list(self.station_view, self.current_stops, x, self.last_station_search))
+        self.route_search.textChanged.connect(lambda x: self.update_routes(x))
+        self.station_search.textChanged.connect(lambda x: self.update_stops(x))
         
         self.station_view.addItem("Select a route!")
+        self.station_view.setEnabled(False)
+        self.station_search.setEnabled(False)
         
         main_layout = QVBoxLayout()
         main_layout.addWidget(self.route_search)
@@ -93,10 +95,14 @@ class SearchTripsWidget(QWidget):
         self.station_view.clear()
         
     def populate_stations(self, route: str):
+        self.station_search.setEnabled(True)
+        self.station_view.setEnabled(True)
+        
         static = self.static[self.static.route_long_name.str.contains(route, case = False, regex = False)]
         
         self.station_view.clear()
         self.station_view.addItem("Finding stops...")
+        self.station_search.setPlaceholderText(f"Search for a stop along {route}...")
         
         try:
             current_times = self.gd.get_current(static, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
@@ -119,38 +125,44 @@ class SearchTripsWidget(QWidget):
         thread.start()
         self.setEnabled(False)
         
+    def update_stops(self, search: str):
+        self.update_list(self.station_view, self.current_stops, search, self.last_station_search)
+        self.last_station_search = search
+        
+    def update_routes(self, search: str):
+        self.update_list(self.route_view, self.all_routes, search, self.last_route_search)
+        self.last_route_search = search
+        
     def update_list(self, current_widget: QListWidget, source_list: list, current_search: str, last_search: str):
-        current_widget.clear()
-        
         if not current_search:
+            current_widget.clear()
             current_widget.addItems(source_list)
-            return
-                
-        current_results = [current_widget.item(x).text() for x in range(current_widget.count())] if not current_search.startswith(last_search) else source_list
-        last_search = current_search
-
-        new_results = []
-        check_search = current_search.lower()
-        search_chars = set(check_search)
-
-        for result in current_results:
-            check_result = result.lower()
-            if not all(char in check_result for char in search_chars):
-                continue
-
-            score = self.search(check_search, check_result)
-
-            if score > 0:
-                new_results.append({
-                    "val": result,
-                    "score": score
-                })
-
-        new_results.sort(key = lambda x: x["score"], reverse = True)
         
-        new_results = [entry["val"] for entry in new_results]
-            
-        current_widget.addItems(new_results)
+        else:        
+            current_results = [current_widget.item(x).text() for x in range(current_widget.count())] if current_search.startswith(last_search) else source_list
+            current_widget.clear()
+
+            new_results = []
+            check_search = current_search.lower()
+            search_chars = set(check_search)
+
+            for result in current_results:
+                check_result = result.lower()
+                if not all(char in check_result for char in search_chars):
+                    continue
+
+                score = self.search(check_search, check_result)
+
+                if score > 0:
+                    new_results.append({
+                        "val": result,
+                        "score": score
+                    })
+
+            new_results.sort(key = lambda x: x["score"], reverse = True)
+            new_results = [entry["val"] for entry in new_results]
+
+            current_widget.addItems(new_results)
 
     def search(self, needle: str, haystack: str):
         score = 0
