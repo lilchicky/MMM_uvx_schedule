@@ -10,7 +10,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QListWidget
 )
-from config import UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL
+from config import UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL, LOGGER
 from util import format_name, WorkerThread
 
 class StationInfoWidget(QWidget):
@@ -42,10 +42,9 @@ class StationInfoWidget(QWidget):
         self.headsign_south.setText(f"South Final Stop: {new_data.get("trip_headsign_south")}")
         
 class SearchTripsWidget(QWidget):
-    def __init__(self, gd: GTFSData, logger: logging.Logger):
+    def __init__(self, gd: GTFSData):
         super().__init__()
         self.gd = gd
-        self.logger = logger
         
         self.last_route_search = ""
         self.last_station_search = ""
@@ -108,8 +107,8 @@ class SearchTripsWidget(QWidget):
             current_times = self.gd.get_current(static, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
             
         except GtfsLoadError as e:
-            self.logger.critical("Failed to retrieve current protobuf data.")
-            self.logger.exception(e)
+            LOGGER.critical("Failed to retrieve current protobuf data.")
+            LOGGER.exception(e)
             
         self.current_stops = current_times["stop_name"].unique()
         self.current_stops = [format_name(entry) for entry in self.current_stops]

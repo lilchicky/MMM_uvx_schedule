@@ -24,11 +24,11 @@ from geopy.geocoders import Nominatim
 
 from gtfs_data import GTFSData, GtfsLoadError
 from uta_widgets import StationInfoWidget, SearchTripsWidget
-from uta_logger import UTALogger
 from config import (
     UTA_GTFS_STATIC_URL,
     UTA_TRIP_UPDATE_URL,
-    UTA_VEHICLES_URL
+    UTA_VEHICLES_URL,
+    LOGGER
 )
 from util import (
     get_next_departures,
@@ -45,8 +45,6 @@ load_dotenv()
 CARTO_KEY = os.getenv("CARTO_KEY")
 
 class UTAMapUI(QMainWindow):
-    
-    LOGGER = UTALogger("ui", "ui").logger
     
     def __init__(self):
         super().__init__()
@@ -114,7 +112,7 @@ class UTAMapUI(QMainWindow):
     
     def build_info_pane(self):
         self.route_data = StationInfoWidget()
-        self.test_search = SearchTripsWidget(self.gd, UTAMapUI.LOGGER)
+        self.test_search = SearchTripsWidget(self.gd)
         
         self.refresh = QPushButton("Refresh Static Data")
         self.refresh.clicked.connect(lambda: self.start_input_thread_work(self.refresh, self.test_search.refresh))
@@ -155,12 +153,11 @@ class UTAMapUI(QMainWindow):
             try:
                 current_times = self.gd.get_current(search, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
             except GtfsLoadError as e:
-                UTAMapUI.LOGGER.critical("Failed to retrieve current protobuf data.")
-                UTAMapUI.LOGGER.exception(e)
+                LOGGER.critical("Failed to retrieve current protobuf data.")
+                LOGGER.exception(e)
     
             dirs = get_next_departures(
-                current_times, today, 
-                UTAMapUI.LOGGER, 
+                current_times, today,
                 station = station, 
                 num_routes = 3
             )
@@ -169,7 +166,7 @@ class UTAMapUI(QMainWindow):
                 self.route_data.update_label(departures)
                 break
 
-if __name__ == '__main__':
+def ui():
     app = QApplication(sys.argv)
     window = UTAMapUI()
     window.show()

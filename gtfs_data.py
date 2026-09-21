@@ -7,17 +7,16 @@ import datetime
 from google.transit import gtfs_realtime_pb2
 from typing import ClassVar
 from dataclasses import dataclass
-from uta_logger import UTALogger
 from zoneinfo import ZoneInfo
 from datetime import timezone, datetime
 from util import parse_service_time
+from config import LOGGER
 
 class GtfsLoadError(Exception):
     '''Exception to be thrown if GTFSData fails to be created for whatever reason.'''
 
 @dataclass
 class GTFSData:
-    _LOGGER = UTALogger("gtfs_data", "gtfs_data_handler").logger
     
     agency: pd.DataFrame
     stops: pd.DataFrame
@@ -41,7 +40,7 @@ class GTFSData:
         try:
             _gtfs_static = requests.get(url = url)
             _gtfs_static.raise_for_status()
-            GTFSData._LOGGER.info(f"Successfully connected to {url}: Response {_gtfs_static.status_code}")
+            LOGGER.info(f"Successfully connected to {url}: Response {_gtfs_static.status_code}")
                     
         except requests.exceptions.HTTPError:
             raise(GtfsLoadError(f"Failed to connect to {url}: Response {_gtfs_static.status_code}"))
@@ -83,7 +82,7 @@ class GTFSData:
         try:
             _gtfs_static = requests.get(url = self.gtfs_static_url)
             _gtfs_static.raise_for_status()
-            GTFSData._LOGGER.info(f"Successfully connected to {self.gtfs_static_url}: Response {_gtfs_static.status_code}")
+            LOGGER.info(f"Successfully connected to {self.gtfs_static_url}: Response {_gtfs_static.status_code}")
                     
         except requests.exceptions.HTTPError:
             raise(GtfsLoadError(f"Failed to connect to {self.gtfs_static_url}: Response {_gtfs_static.status_code}"))
@@ -107,17 +106,17 @@ class GTFSData:
         if route_name:
             route_ids = self.routes.loc[
                 self.routes.route_long_name.str.contains(route_name, case = False, regex = False),
-                ["route_id", "route_long_name"]
+                ["route_id", "route_long_name", "route_short_name"]
             ]
             
         else:
-            route_ids = self.routes[["route_id", "route_long_name"]]
+            route_ids = self.routes[["route_id", "route_long_name", "route_short_name"]]
         
         if route_ids.empty:
-            self._LOGGER.warning(f"Found no trips that match [{route_name}].")
+            LOGGER.warning(f"Found no trips that match [{route_name}].")
             return None
         
-        self._LOGGER.info(f"Found {len(route_ids)} routes matching \"{route_name}\".")
+        LOGGER.info(f"Found {len(route_ids)} routes matching \"{route_name}\".")
 
         trips = self.trips.loc[
             self.trips.route_id.isin(route_ids.route_id),
@@ -160,7 +159,7 @@ class GTFSData:
             except requests.HTTPError:
                 raise(GtfsLoadError(f"Failed to retrieve protobuf data from [{url}]: Response {pb.status_code}"))
 
-            GTFSData._LOGGER.info(f"Successfully connected to {url}: Response {pb.status_code}")
+            LOGGER.info(f"Successfully connected to {url}: Response {pb.status_code}")
             feed = gtfs_realtime_pb2.FeedMessage()
             feed.ParseFromString(pb.content)
 

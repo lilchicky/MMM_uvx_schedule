@@ -1,9 +1,9 @@
 import pandas as pd
-import logging
 import re
 
 from PyQt6.QtCore import QThread, pyqtSignal
 from datetime import timedelta, datetime
+from config import LOGGER
 
 def parse_service_time(stop_time: str, today: datetime) -> datetime:
     '''
@@ -32,19 +32,19 @@ def parse_service_time(stop_time: str, today: datetime) -> datetime:
     
     return adjusted_date + timedelta(days = h // 24)
 
-def get_next_departures(frame: pd.DataFrame, today: datetime, logger: logging.Logger, station: str|int = "", num_routes: int = 1) -> dict: 
+def get_next_departures(frame: pd.DataFrame, today: datetime, station: str|int = "", num_routes: int = 1) -> dict: 
     future_trips = frame[frame.departure_time > today]
     
     if station:
-        station_restricted = get_stations(future_trips, station, logger)
+        station_restricted = get_stations(future_trips, station, LOGGER)
         
         if not station_restricted.empty:
             future_trips = station_restricted
             matched_stations = future_trips.stop_name.unique()
-            logger.info(f"{"Stop ID" if isinstance(station, int) else "Stop name"} [{station}] was found and resolved to {format_readable_list(matched_stations, max_len = 5, isolate_char = "\"")}.")
+            LOGGER.info(f"{"Stop ID" if isinstance(station, int) else "Stop name"} [{station}] was found and resolved to {format_readable_list(matched_stations, max_len = 5, isolate_char = "\"")}.")
         
         else:
-            logger.warning(f"No stops could be found that match {"stop ID" if isinstance(station, int) else "stop name"} [{station}], so all stations will be included.")
+            LOGGER.warning(f"No stops could be found that match {"stop ID" if isinstance(station, int) else "stop name"} [{station}], so all stations will be included.")
             
     future_trips = future_trips.sort_values(["route_id", "stop_id", "direction_id", "departure_time"])
     grouped_trips = future_trips.groupby(["route_id", "stop_id", "direction_id"]).head(num_routes).reset_index(drop = True)
@@ -76,7 +76,7 @@ def get_next_departures(frame: pd.DataFrame, today: datetime, logger: logging.Lo
             
     return times
     
-def get_stations(search_frame: pd.DataFrame, station: str|int, logger: logging.Logger) -> pd.DataFrame:
+def get_stations(search_frame: pd.DataFrame, station: str|int) -> pd.DataFrame:
     return (
         search_frame[search_frame.stop_id == station] if isinstance(station, int)
         else search_frame[search_frame.stop_name.str.contains(station, case = False)]
@@ -136,6 +136,7 @@ def format_readable_list(input: list, max_len: int = 0, isolate_char: str = "") 
     return joined + after_and
     
 def format_name(name: str) -> str:
+    # Search for values between parentheses to remain all capital
     match = re.search(r"\(([A-Z0-9]+)\)\s*$", name)
     
     if match:
@@ -144,7 +145,7 @@ def format_name(name: str) -> str:
         
         return f"{text.title() if text.isupper() else text} {a}"
         
-    return name.title() if name.isupper() else name
+    return name.title()
     
 class WorkerThread(QThread):
     result_ready = pyqtSignal(str)
