@@ -130,26 +130,30 @@ class SearchTripsWidget(QWidget):
         last_search = current_search
 
         new_results = []
+        check_search = current_search.lower()
+        search_chars = set(check_search)
 
         for result in current_results:
-            if current_search not in result:
+            check_result = result.lower()
+            if not all(char in check_result for char in search_chars):
+                print(f"All characters from {search_chars} are not in {result}")
                 continue
 
-            score = self.search(current_search, result)
+            score = self.search(check_search, check_result)
+            print(f"Search: {check_search}, Result: {check_result}, Score: {score}")
 
-            if score > 0:
-                new_results.append({
-                    "val": result,
-                    "score": score
-                })
+            new_results.append({
+                "val": result,
+                "score": score
+            })
 
-        new_results = new_results.sort()
+        new_results.sort(key = lambda x: x["score"])
         
-        new_results = [result for result in current_results if current_search.lower() in result.lower()]
+        new_results = [entry["val"] for entry in new_results]
             
         current_widget.addItems(new_results)
 
-    def search(needle: str, haystack: str):
+    def search(self, needle: str, haystack: str):
         score = 0
         search_pos = 0
         last_match = 0
@@ -160,14 +164,12 @@ class SearchTripsWidget(QWidget):
         if(needle == haystack):
             return 1000
 
-        if(needle_len > haystack_len):
-            return 0
-
-        for i, char in enumerate(haystack):
-            if search_pos > needle_len:
+        for i in range(haystack_len):
+            if search_pos >= needle_len:
                 break
-
-            if haystack[:i] == needle[:search_pos]:
+            
+            if needle[search_pos:] in haystack[i:]:
+                
                 if last_match:
                     score -= (i - last_match - 1) * 2
                     score = max(score, 1)
@@ -185,10 +187,7 @@ class SearchTripsWidget(QWidget):
                 last_match = i
                 search_pos += 1
 
-        if search_pos < needle_len:
-            return 0
-
-        if haystack[:search_pos] == needle:
+        if haystack[search_pos:] == needle:
             score += 100
 
         return score
