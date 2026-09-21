@@ -97,14 +97,15 @@ class SearchTripsWidget(QWidget):
         self.station_search.setEnabled(True)
         self.station_view.setEnabled(True)
         
-        static = self.static[self.static.route_long_name.str.contains(route, case = False, regex = False)]
+        self.static = self.gd.get_trips_from_name(route)
+        station_names = self.static[self.static.route_long_name.str.contains(route, case = False, regex = False)]
         
         self.station_view.clear()
         self.station_view.addItem("Finding stops...")
         self.station_search.setPlaceholderText(f"Search for a stop along {route}...")
         
         try:
-            current_times = self.gd.get_current(static, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
+            current_times = self.gd.get_current(station_names, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
             
         except GtfsLoadError as e:
             LOGGER.critical("Failed to retrieve current protobuf data.")

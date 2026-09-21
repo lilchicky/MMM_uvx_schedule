@@ -143,6 +143,8 @@ class GTFSData:
         today = datetime.now(timezone.utc).astimezone(self.agency_tzinfo)
         complete_trips.arrival_time = complete_trips.arrival_time.map(lambda x: parse_service_time(x, today))
         complete_trips.departure_time = complete_trips.departure_time.map(lambda x: parse_service_time(x, today))
+        
+        LOGGER.info(f"Found {len(complete_trips)} stations for route {route_name}.")
 
         return complete_trips.sort_values("departure_time").reset_index(drop = True)
     
