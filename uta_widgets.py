@@ -165,10 +165,12 @@ class SearchTripsWidget(QWidget):
             return 1000
 
         for i in range(haystack_len):
+            print(score)
             if search_pos >= needle_len:
                 break
             
-            if needle[search_pos:] in haystack[i:]:
+            print(f"Checking if {needle[search_pos]} is in {haystack[i:]}")
+            if needle[search_pos] in haystack[i:]:
                 
                 if last_match:
                     score -= (i - last_match - 1) * 2
