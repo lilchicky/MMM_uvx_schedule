@@ -113,10 +113,10 @@ class GTFSData:
             route_ids = self.routes[["route_id", "route_long_name", "route_short_name"]]
         
         if route_ids.empty:
-            LOGGER.warning(f"Found no trips that match [{route_name}].")
+            LOGGER.warning(f"Unable to find any routes{f" that match \"{route_name}\"" if route_name else ""}.")
             return None
         
-        LOGGER.info(f"Found {len(route_ids)} routes matching \"{route_name}\".")
+        LOGGER.info(f"Found {len(route_ids)} route(s){f" matching \"{route_name}\"" if route_name else ""}.")
 
         trips = self.trips.loc[
             self.trips.route_id.isin(route_ids.route_id),
@@ -144,7 +144,7 @@ class GTFSData:
         complete_trips.arrival_time = complete_trips.arrival_time.map(lambda x: parse_service_time(x, today))
         complete_trips.departure_time = complete_trips.departure_time.map(lambda x: parse_service_time(x, today))
         
-        LOGGER.info(f"Found {len(complete_trips)} stations for route {route_name}.")
+        LOGGER.info(f"Found {len(complete_trips.stop_id.unique())} station(s){f" for route \"{route_name}\"" if route_name else ""}.")
 
         return complete_trips.sort_values("departure_time").reset_index(drop = True)
     
