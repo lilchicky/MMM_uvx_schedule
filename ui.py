@@ -137,8 +137,8 @@ class UTAMapUI(QMainWindow):
         
     def refresh_static_data(self):
         self.gd.refresh_static_data()
-        self.search_routes = self.gd.routes["route_long_name"].apply(lambda x: format_name(x)).unique()
-        self.search_stops = self.gd.stops["stop_name"].apply(lambda x: format_name(x)).unique()
+        self.search_routes = self.gd.routes["route_long_name"].unique().apply(lambda x: format_name(x))
+        self.search_stops = self.gd.stops["stop_name"].unique().apply(lambda x: format_name(x))
         
     def push(self):
         self.count += 1
