@@ -36,7 +36,7 @@ def get_next_departures(frame: pd.DataFrame, today: datetime, station: str|int =
     future_trips = frame[frame.departure_time > today]
     
     if station:
-        station_restricted = get_stations(future_trips, station, LOGGER)
+        station_restricted = get_stations(future_trips, station)
         
         if not station_restricted.empty:
             future_trips = station_restricted
@@ -48,7 +48,6 @@ def get_next_departures(frame: pd.DataFrame, today: datetime, station: str|int =
             
     future_trips = future_trips.sort_values(["route_id", "stop_id", "direction_id", "departure_time"])
     grouped_trips = future_trips.groupby(["route_id", "stop_id", "direction_id"]).head(num_routes).reset_index(drop = True)
-    print(grouped_trips)
 
     times = {}
 

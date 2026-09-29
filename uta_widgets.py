@@ -1,8 +1,8 @@
 import pandas as pd
-import logging
 
+from datetime import datetime, timezone
 from gtfs_data import GTFSData, GtfsLoadError
-from PyQt6.QtCore import Qt, QMimeData
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -11,7 +11,7 @@ from PyQt6.QtWidgets import (
     QListWidget
 )
 from config import UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL, LOGGER
-from util import format_name, WorkerThread
+from util import format_name, WorkerThread, get_next_departures
 
 class StationInfoWidget(QWidget):
     def __init__(self):
@@ -42,6 +42,8 @@ class StationInfoWidget(QWidget):
         self.headsign_south.setText(f"South Final Stop: {new_data.get("trip_headsign_south")}")
         
 class SearchTripsWidget(QWidget):
+    station_selected = pyqtSignal(dict)
+    
     def __init__(self, gd: GTFSData):
         super().__init__()
         self.gd = gd
@@ -64,7 +66,8 @@ class SearchTripsWidget(QWidget):
         self.station_view = QListWidget()
         self.route_view = QListWidget()
         
-        self.route_view.itemClicked.connect(lambda: self.pause_widget(self.populate_stations, self.route_view.currentItem().text()))
+        self.route_view.itemClicked.connect(lambda x: self.pause_widget(self.populate_stations, x.text()))
+        self.station_view.itemClicked.connect(lambda x: self._emit_station_data(x.text()))
         
         self.route_search.textChanged.connect(lambda x: self.update_routes(x))
         self.station_search.textChanged.connect(lambda x: self.update_stops(x))
@@ -93,6 +96,23 @@ class SearchTripsWidget(QWidget):
         
         self.station_view.clear()
         
+    def get_current_data(self) -> pd.DataFrame:
+        try:
+            return self.gd.get_current(self.static, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
+            
+        except GtfsLoadError as e:
+            LOGGER.critical("Failed to retrieve current protobuf data.")
+            LOGGER.exception(e)
+            
+    def _emit_station_data(self, station):
+        departures = get_next_departures(
+            self.get_current_data(), 
+            datetime.now(timezone.utc).astimezone(self.gd.agency_tzinfo), 
+            station = station
+        )
+        
+        self.station_selected.emit(departures)
+        
     def populate_stations(self, route: str):
         self.station_search.setEnabled(True)
         self.station_view.setEnabled(True)
@@ -102,15 +122,8 @@ class SearchTripsWidget(QWidget):
         self.station_view.clear()
         self.station_view.addItem("Finding stops...")
         self.station_search.setPlaceholderText(f"Search for a stop along {route}...")
-        
-        try:
-            current_times = self.gd.get_current(self.static, UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL)
             
-        except GtfsLoadError as e:
-            LOGGER.critical("Failed to retrieve current protobuf data.")
-            LOGGER.exception(e)
-            
-        self.current_stops = current_times["stop_name"].unique()
+        self.current_stops = self.get_current_data()["stop_name"].unique()
         self.current_stops = [format_name(entry) for entry in self.current_stops]
         
         self.station_view.clear()
