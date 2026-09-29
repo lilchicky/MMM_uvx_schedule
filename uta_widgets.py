@@ -36,10 +36,15 @@ class StationInfoWidget(QWidget):
         self.setLayout(main_layout)
 
     def update_label(self, new_data: dict):
-        self.route_name.setText(f"Route: {new_data.get("route_name")}")
-        self.stop_name.setText(f"Stop: {new_data.get("stop_name")}")
-        self.headsign_north.setText(f"North Final Stop: {new_data.get("trip_headsign_north")}")
-        self.headsign_south.setText(f"South Final Stop: {new_data.get("trip_headsign_south")}")
+        for _, route in new_data.items():
+            LOGGER.info(f"Generating departure info label for route {route.get("route_name")}...")
+
+            self.route_name.setText(f"Route: {route.get("route_name")}")
+            self.stop_name.setText(f"Stop: {route.get("stop_name")}")
+            self.headsign_north.setText(f"North Final Stop: {route.get("trip_headsign_north")}")
+            self.headsign_south.setText(f"South Final Stop: {route.get("trip_headsign_south")}")
+            
+            break
         
 class SearchTripsWidget(QWidget):
     station_selected = pyqtSignal(dict)
