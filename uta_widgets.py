@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QListWidget
 )
+from PyQt6.QtGui import QFont
 from config import UTA_TRIP_UPDATE_URL, UTA_VEHICLES_URL, LOGGER
 from util import format_name, WorkerThread, get_next_departures
 
@@ -70,6 +71,8 @@ class SearchTripsWidget(QWidget):
         
         self.station_view = QListWidget()
         self.route_view = QListWidget()
+        
+        self.route_view.setFont(QFont("Inter", 14))
         
         self.route_view.itemClicked.connect(lambda x: self.pause_widget(self.populate_stations, x.text()))
         self.station_view.itemClicked.connect(lambda x: self._emit_station_data(x.text()))

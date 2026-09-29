@@ -69,46 +69,14 @@ class UTAMapUI(QMainWindow):
         
         self.info_pane = QWidget()
         
-        self.search_pane.setLayout(self.build_search_bar())
         self.info_pane.setLayout(self.build_info_pane())
         
         main_layout = QVBoxLayout()
-        main_layout.addWidget(self.search_pane)
         main_layout.addWidget(self.info_pane)
         
         self.main_pane.setLayout(main_layout)
         
         self.setCentralWidget(self.main_pane)
-        
-    def build_search_bar(self):
-        
-        def get_completer(database: list):
-            completer = QCompleter(database, self)
-            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-            completer.setFilterMode(Qt.MatchFlag.MatchContains)
-            return completer
-            
-        self.route_search = QLineEdit()
-        self.station_search = QLineEdit()
-        
-        self.submit_search = QPushButton("Search")
-        self.submit_search.setMaximumSize(100, 25)
-        self.submit_search.setMinimumSize(80, 25)
-        
-        self.route_search.setCompleter(get_completer(self.search_routes))
-        self.station_search.setCompleter(get_completer(self.search_stops))
-
-        # Interaction connections
-        self.route_search.returnPressed.connect(lambda: self.push(self.route_search.text()))
-        self.station_search.returnPressed.connect(lambda: self.push(self.station_search.text()))
-        self.submit_search.clicked.connect(lambda: self.search(self.route_search.text(), self.station_search.text()))
-        
-        search_layout = QHBoxLayout()
-        search_layout.addWidget(self.route_search)
-        search_layout.addWidget(self.station_search)
-        search_layout.addWidget(self.submit_search)
-        
-        return search_layout
     
     def build_info_pane(self):
         self.route_data = StationInfoWidget()

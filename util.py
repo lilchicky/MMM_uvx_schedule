@@ -111,6 +111,16 @@ def build_departure_string(departures: dict) -> str:
     return f"{north}{"\n" if north and south else ""}{south}"
     
 def format_readable_list(input: list, max_len: int = 0, isolate_char: str = "") -> str:
+    '''
+    Format a list into a string that uses commas and "and" if necessary, like "thing and thing" or "thing, thing, and thing"
+    
+    :param list input: The list of strings to be formatted
+    :param int max_len: The maximum number of elements that can be in the sentence. Elements over this number will be formatted
+        as "... and [num] more."
+    :param str isolate_char: A character to put each element between like using quotes to format each element like "thing", "thing", and "thing"
+    
+    :returns str: The formatted list as a string
+    '''
     original_len = len(input)
     truncated = False
     
@@ -136,6 +146,51 @@ def format_readable_list(input: list, max_len: int = 0, isolate_char: str = "") 
     
 def format_name(name: str) -> str:
     # Search for values between parentheses to remain all capital
+    name_words = re.split(r"([/\s()])", name)
+    
+    to_upper = [
+        "byu",
+        "uvx",
+        "slc",
+        "mvx",
+        "ogx",
+        "wsu",
+        "uvu"
+    ]
+    
+    to_lower = [
+        "th"
+    ]
+    
+    to_replace = {
+        "spfk": "Spanish Fork",
+        "spvl": "Springville",
+        "stn": "Station",
+        "spr": "Springs",
+        "mtn": "Mountain"
+    }
+    
+    for i, word in enumerate(name_words):
+        word = word.lower()
+        
+        if word in to_upper:
+            name_words[i] = word.upper()
+            
+        elif word in to_lower:
+            name_words[i] = word
+            
+        elif word in to_replace.keys():
+            name_words[i] = to_replace.get(word)
+            
+        else:
+            name_words[i] = word.title()
+            
+    formatted = "".join(name_words)
+        
+    print(f"Original: [{name}], Formatted: [{formatted}]")
+        
+    return formatted
+        
     match = re.search(r"\(([A-Z0-9]+)\)\s*$", name)
     
     if match:
